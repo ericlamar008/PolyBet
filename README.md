@@ -1,2 +1,0 @@
-# PolyBet
-a personal project
