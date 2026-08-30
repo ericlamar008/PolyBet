@@ -1,0 +1,30 @@
+# .github/workflows/daily_scan.yml
+# PLACEMENT: .github/workflows/daily_scan.yml (exact path)
+#
+# TIME CHOSEN: 17:12 UTC daily.
+# Reasoning (see chat for sources):
+#  - US BLS/BEA release major economic data at 8:30 AM ET every release day;
+#    FRED usually has same-day series updates a few hours later, so 17:12 UTC
+#    (~noon-1pm ET) gives a safe buffer before the bot reads FRED/BEA/etc.
+#  - 17:00 UTC is documented as Polymarket's single busiest trading hour,
+#    meaning market prices are most liquid/stable right when this bot reads
+#    them for position sizing.
+#  - :12 minutes (not :00) avoids GitHub Actions' top-of-hour congestion.
+# That's 20:42 Iran time, ~12:12-13:12 PM US Eastern depending on US DST.
+# To change: edit the two numbers in the cron line below (minute hour).
+
+name: PolyBet Daily Scan
+
+on:
+  schedule:
+    - cron: "12 17 * * *"   # 17:12 UTC = ~20:42 Iran time
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polybet-daily-scan
+  cancel-in-progress: false
+
+jobs:
