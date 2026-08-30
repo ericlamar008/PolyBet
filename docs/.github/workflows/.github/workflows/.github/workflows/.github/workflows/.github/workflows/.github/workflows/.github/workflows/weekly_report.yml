@@ -1,0 +1,50 @@
+# .github/workflows/weekly_report.yml
+# PLACEMENT: .github/workflows/weekly_report.yml (exact path, alongside daily_scan.yml)
+#
+# Runs once a week (Sunday night) after the daily scan has already run that
+# day, checks which of the last 7 days' signals have resolved on Polymarket,
+# and sends the success-rate report to Telegram. Also commits the updated
+# predictions_resolved.csv so history isn't lost between runs.
+
+name: PolyBet Weekly Report
+
+on:
+  schedule:
+    - cron: "0 18 * * 0"   # Sunday 18:00 UTC = ~21:30 Iran time (after that day's daily scan)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polybet-weekly-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run weekly report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python weekly_report.py
+
+      - name: Commit updated resolution cache
+        run: |
+          git config user.name "polybet-bot"
+          git config user.email "polybet-bot@users.noreply.github.com"
+          git add predictions_resolved.csv
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Weekly report: $(date -u +'%Y-%m-%d')"
+          git push
