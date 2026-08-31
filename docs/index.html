@@ -1,1 +1,520 @@
-<!-- placeholder, bot will overwrite this -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polymarket Bot — Latest Scan</title>
+<style>
+body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 880px; margin: 0 auto; padding: 0 1rem 2rem; color: #1f2328; }
+h1 { font-size: 1.5rem; margin-top: 1.5rem; }
+.generated-at { color: #57606a; font-size: 0.9rem; margin-bottom: 1rem; }
+.section-nav { position: sticky; top: 0; z-index: 10; background: #ffffff; display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.6rem 0; border-bottom: 1px solid #d0d7de; margin-bottom: 1rem; }
+.nav-btn { border: 1px solid #d0d7de; background: #f6f8fa; color: #1f2328; border-radius: 999px; padding: 0.35rem 0.85rem; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+.nav-btn:hover { background: #eaeef2; }
+.nav-btn.active { background: #0969da; border-color: #0969da; color: #fff; }
+.nav-count { opacity: 0.8; }
+.section-title { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; padding-bottom: 0.35rem; border-bottom: 2px solid #d0d7de; }
+.section-count { color: #57606a; font-weight: 400; font-size: 0.9rem; }
+.market-card { border: 1px solid #d0d7de; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.market-card h2 { font-size: 1.05rem; margin: 0 0 0.5rem; }
+.market-card h2 a { color: #0969da; text-decoration: none; }
+.confidence-badge { margin-left: 0.5rem; font-size: 0.75rem; background: #fff8c5; color: #7d4e00; border-radius: 999px; padding: 0.1rem 0.55rem; vertical-align: middle; }
+.signal { font-size: 1rem; margin: 0.25rem 0 0.75rem; }
+.margin { font-size: 0.9rem; margin: 0 0 0.75rem; color: #1a7f37; }
+.meta { color: #57606a; font-size: 0.85rem; margin-bottom: 0.5rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 0.5rem; }
+th, td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid #eaeef2; }
+.warning { color: #9a6700; font-size: 0.85rem; }
+.empty { color: #57606a; }
+summary { cursor: pointer; color: #57606a; font-size: 0.85rem; }
+.ai-sep { border: none; border-top: 1px dashed #d0d7de; margin: 0.85rem 0; }
+.ai-widget { font-size: 0.9rem; }
+.ai-btn { background: #6e40c9; color: #fff; border: none; border-radius: 6px; padding: 0.4rem 0.8rem; font-size: 0.85rem; cursor: pointer; }
+.ai-btn:disabled { opacity: 0.6; cursor: default; }
+.ai-result { margin-top: 0.6rem; padding: 0.6rem 0.75rem; background: #f6f8fa; border-radius: 6px; font-size: 0.85rem; line-height: 1.5; }
+.ai-result:empty { display: none; }
+</style>
+</head>
+<body>
+<h1>Polymarket Bot — Latest Scan</h1>
+<p class="generated-at">Generated 2026-08-31 19:26 UTC</p>
+<nav class="section-nav"><button type="button" class="nav-btn active" data-target="all" onclick="filterSection(this)">همه <span class="nav-count">(23)</span></button><button type="button" class="nav-btn" data-target="high_confidence" onclick="filterSection(this)">⭐ احتمال بالا <span class="nav-count">(8)</span></button><button type="button" class="nav-btn" data-target="politics" onclick="filterSection(this)">🗳️ سیاسی <span class="nav-count">(3)</span></button><button type="button" class="nav-btn" data-target="economy" onclick="filterSection(this)">📊 اقتصادی <span class="nav-count">(2)</span></button><button type="button" class="nav-btn" data-target="markets" onclick="filterSection(this)">💰 بازارهای مالی <span class="nav-count">(10)</span></button></nav>
+<section class="market-section" data-section="high_confidence">
+<h2 class="section-title">⭐ احتمال بالا (Market-Implied) <span class="section-count">(8)</span></h2>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/massachusetts-democratic-senate-primary-winner" target="_blank" rel="noopener">Massachusetts Democratic Senate Primary Winner</a><span class="confidence-badge">⭐ 99.1%</span></h2>
+<p class="signal">🎯 Signal: <strong>Ed Markey</strong> — 100.0% (market price 0.99)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+1.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>0.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Ed Markey</td><td>100.0%</td><td>0.99</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;799646&quot;, &quot;question&quot;: &quot;Will Ayanna Pressley be the Democratic nominee for Senate in Massachusetts?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0005, 0.9995], &quot;end_date&quot;: &quot;2026-09-01T00:00:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-799646"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/massachusetts-governor-republican-primary-winner" target="_blank" rel="noopener">Massachusetts Governor Republican Primary Winner</a><span class="confidence-badge">⭐ 98.6%</span></h2>
+<p class="signal">🎯 Signal: <strong>Michael Minogue</strong> — 100.0% (market price 0.99)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+1.4%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>0.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Michael Minogue</td><td>100.0%</td><td>0.99</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;907436&quot;, &quot;question&quot;: &quot;Will Mike Kennealy win the 2026 Massachusetts Governor Republican primary election?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0055, 0.9945], &quot;end_date&quot;: &quot;2026-09-01T00:00:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-907436"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/ma-05-democratic-primary-winner-20260727181542922" target="_blank" rel="noopener">MA-05 Democratic Primary Winner</a><span class="confidence-badge">⭐ 98.7%</span></h2>
+<p class="signal">🎯 Signal: <strong>Katherine Clark</strong> — 100.0% (market price 0.99)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+1.4%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>0.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Katherine Clark</td><td>100.0%</td><td>0.99</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3141922&quot;, &quot;question&quot;: &quot;Will Katherine Clark be the MA-05 Democratic nominee?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.9865, 0.0135], &quot;end_date&quot;: &quot;2026-09-01T00:00:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3141922"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/ma-09-democratic-primary-winner-20260727181858121" target="_blank" rel="noopener">MA-09 Democratic Primary Winner</a><span class="confidence-badge">⭐ 99.3%</span></h2>
+<p class="signal">🎯 Signal: <strong>Bill Keating</strong> — 100.0% (market price 0.99)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+0.7%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>0.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Bill Keating</td><td>100.0%</td><td>0.99</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3141931&quot;, &quot;question&quot;: &quot;Will Bill Keating be the MA-09 Democratic nominee?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.993, 0.007], &quot;end_date&quot;: &quot;2026-09-01T00:00:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3141931"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/ma-01-democratic-primary-winner-20260727173754524" target="_blank" rel="noopener">MA-01 Democratic Primary Winner</a><span class="confidence-badge">⭐ 92.1%</span></h2>
+<p class="signal">🎯 Signal: <strong>Richard Neal</strong> — 96.7% (market price 0.92)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>1.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (2 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Richard Neal</td><td>96.7%</td><td>0.92</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>Jeromie Whalen</td><td>3.3%</td><td>0.08</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3141846&quot;, &quot;question&quot;: &quot;Will Richard Neal be the MA-01 Democratic nominee?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.921, 0.079], &quot;end_date&quot;: &quot;2026-09-01T23:59:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3141846"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/ma-04-democratic-primary-winner-20260727180932560" target="_blank" rel="noopener">MA-04 Democratic Primary Winner</a><span class="confidence-badge">⭐ 98.1%</span></h2>
+<p class="signal">🎯 Signal: <strong>Jake Auchincloss</strong> — 100.0% (market price 0.98)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+1.9%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>1.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Jake Auchincloss</td><td>100.0%</td><td>0.98</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3141888&quot;, &quot;question&quot;: &quot;Will Jake Auchincloss be the MA-04 Democratic nominee?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.981, 0.019], &quot;end_date&quot;: &quot;2026-09-01T23:59:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3141888"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/bank-of-canada-decision-in-september-20260701223913897" target="_blank" rel="noopener">Bank of Canada Decision in September?</a><span class="confidence-badge">⭐ 99.8%</span></h2>
+<p class="signal">🎯 Signal: <strong>No Change</strong> — 100.0% (market price 1.00)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+0.2%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی boc: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>boc</strong> &middot; Resolves in <strong>1.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>No Change</td><td>100.0%</td><td>1.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;2773240&quot;, &quot;question&quot;: &quot;Will the Bank of Canada increase the target for the overnight rate by 50+ bps at the September interest rate announcement?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0015, 0.9985], &quot;end_date&quot;: &quot;2026-09-02T00:00:00+00:00&quot;, &quot;category&quot;: &quot;boc&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-2773240"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/reserve-bank-of-new-zealand-decision-in-september-20260710022000963" target="_blank" rel="noopener">Reserve Bank of New Zealand decision in September?</a><span class="confidence-badge">⭐ 98.9%</span></h2>
+<p class="signal">🎯 Signal: <strong>Increase</strong> — 100.0% (market price 0.99)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+1.1%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی central_banks_other: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>central_banks_other</strong> &middot; Resolves in <strong>2.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Increase</td><td>100.0%</td><td>0.99</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;2870680&quot;, &quot;question&quot;: &quot;Will the Reserve Bank of New Zealand increase the official cash rate after the September decision?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.989, 0.011], &quot;end_date&quot;: &quot;2026-09-02T23:59:00+00:00&quot;, &quot;category&quot;: &quot;central_banks_other&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-2870680"></div></div>
+</article>
+</section>
+<section class="market-section" data-section="politics">
+<h2 class="section-title">🗳️ سیاسی و انتخابات (Politics & Elections) <span class="section-count">(3)</span></h2>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/ma-08-democratic-primary-winner" target="_blank" rel="noopener">MA-08 Democratic Primary Winner</a></h2>
+<p class="signal">🎯 Signal: <strong>Stephen Lynch</strong> — 86.6% (market price 0.82)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>0.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (3 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Stephen Lynch</td><td>86.6%</td><td>0.82</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>Patrick Roath</td><td>8.0%</td><td>0.18</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>Andrew Zylberfink</td><td>5.3%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;1493235&quot;, &quot;question&quot;: &quot;Will Stephen Lynch be the Democratic nominee for MA-08?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.825, 0.175], &quot;end_date&quot;: &quot;2026-09-01T00:00:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-1493235"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/mitch-mcconnell-votes-in-the-senate-by-august-31-20260729184249668" target="_blank" rel="noopener">Mitch McConnell votes in the Senate by August 31?</a></h2>
+<p class="signal">🎯 Signal: <strong>Mitch McConnell votes in the Senate by August 31?</strong> — 35.0% (market price 0.00)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Mitch McConnell votes in the Senate by August 31?</td><td>35.0%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3212310&quot;, &quot;question&quot;: &quot;Mitch McConnell votes in the Senate by August 31?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0005, 0.9995], &quot;end_date&quot;: &quot;2026-09-01T03:59:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3212310"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/will-wisconsin-order-a-democratic-governor-primary-recount-by-august-31-20260812123408427" target="_blank" rel="noopener">Will Wisconsin order a Democratic governor primary recount by August 31?</a></h2>
+<p class="signal">🎯 Signal: <strong>Will Wisconsin order a Democratic governor primary recount by August 31?</strong> — 35.0% (market price 0.00)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای این رقابت، RACE_PAGE_MAP در sources/polls.py تنظیم نشده است.)</p>
+<p class="meta">Category: <strong>elections</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>Will Wisconsin order a Democratic governor primary recount by August 31?</td><td>35.0%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3539720&quot;, &quot;question&quot;: &quot;Will Wisconsin order a Democratic governor primary recount by August 31?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0015, 0.9985], &quot;end_date&quot;: &quot;2026-09-01T03:59:00+00:00&quot;, &quot;category&quot;: &quot;elections&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3539720"></div></div>
+</article>
+</section>
+<section class="market-section" data-section="economy">
+<h2 class="section-title">📊 اقتصاد و بانک‌های مرکزی (Economy & Central Banks) <span class="section-count">(2)</span></h2>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/brazil-gdp-growth-in-q2-2026-qoq" target="_blank" rel="noopener">Brazil GDP Growth in Q2 2026 (QoQ)?</a></h2>
+<p class="signal">🎯 Signal: <strong>0.3%–0.5%</strong> — 79.8% (market price 0.76)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی gdp: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>gdp</strong> &middot; Resolves in <strong>1.2d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (7 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>0.3%–0.5%</td><td>79.8%</td><td>0.76</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>0.6%–0.8%</td><td>12.2%</td><td>0.17</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>&lt;0.0%</td><td>2.7%</td><td>0.05</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>0.0%–0.2%</td><td>5.0%</td><td>0.10</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>0.9%–1.1%</td><td>0.3%</td><td>0.01</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>1.2%–1.4%</td><td>0.0%</td><td>0.00</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>≥1.5%</td><td>0.0%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;2428140&quot;, &quot;question&quot;: &quot;Will Brazil&#x27;s Q2 2026 GDP growth rate (QoQ) be less than 0.0%?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0535, 0.9465], &quot;end_date&quot;: &quot;2026-09-01T23:59:00+00:00&quot;, &quot;category&quot;: &quot;gdp&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-2428140"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/august-unemployment-rate-1786116586124" target="_blank" rel="noopener">August Unemployment Rate</a></h2>
+<p class="signal">🎯 Signal: <strong>4.1%</strong> — 64.4% (market price 0.34)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+
+<p class="meta">Category: <strong>employment</strong> &middot; Resolves in <strong>3.5d</strong> &middot; Consensus: <strong>100</strong> (1 sources) &middot; Edge: <strong>34.0%</strong></p>
+<details>
+<summary>Full position plan (9 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>4.1%</td><td>64.4%</td><td>0.34</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>4.2%</td><td>11.4%</td><td>0.33</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>4.3%</td><td>5.4%</td><td>0.15</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>4.0%</td><td>4.5%</td><td>0.13</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>≤3.8%</td><td>1.0%</td><td>0.01</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>3.9%</td><td>4.2%</td><td>0.04</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>4.4%</td><td>5.7%</td><td>0.06</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>4.5%</td><td>0.8%</td><td>0.01</td></tr><tr><td style="color:#9a6700;font-weight:600">Hedge</td><td>≥4.6%</td><td>2.6%</td><td>0.03</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3402363&quot;, &quot;question&quot;: &quot;Will the August 2026 unemployment rate be \u22643.8%?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0105, 0.9895], &quot;end_date&quot;: &quot;2026-09-04T08:30:00+00:00&quot;, &quot;category&quot;: &quot;employment&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3402363"></div></div>
+</article>
+</section>
+<section class="market-section" data-section="markets">
+<h2 class="section-title">💰 بازارهای مالی (Stocks, Commodities & Crypto) <span class="section-count">(10)</span></h2>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/us-reissues-iran-oil-sales-sanction-relief-byptptpt-20260708142359046" target="_blank" rel="noopener">US reissues Iran oil sales sanction relief by...?</a></h2>
+<p class="signal">🎯 Signal: <strong>August 31</strong> — 35.0% (market price 0.00)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی commodities: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>commodities</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (1 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>August 31</td><td>35.0%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;2849356&quot;, &quot;question&quot;: &quot;US reissues Iran oil sanction relief by August 31?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0015, 0.9985], &quot;end_date&quot;: &quot;2026-09-01T03:59:00+00:00&quot;, &quot;category&quot;: &quot;commodities&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-2849356"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-price-will-spy-hit-in-august-2026" target="_blank" rel="noopener">What will S&amp;P 500 (SPY) hit in August 2026?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ $790</strong> — 35.0% (market price 0.01)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی stocks: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>stocks</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (10 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ $790</td><td>35.0%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $780</td><td>10.7%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $680</td><td>9.2%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $700</td><td>4.6%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $800</td><td>3.8%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $690</td><td>3.8%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $720</td><td>2.3%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $710</td><td>2.3%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $730</td><td>1.5%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $670</td><td>26.8%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3096329&quot;, &quot;question&quot;: &quot;Will S&amp;P 500 (SPY) hit (HIGH) $800 in August?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0025, 0.9975], &quot;end_date&quot;: &quot;2026-09-01T03:59:59.999000+00:00&quot;, &quot;category&quot;: &quot;stocks&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3096329"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-price-will-xauusd-hit-in-august-2026" target="_blank" rel="noopener">What will Gold (XAUUSD) hit in August 2026?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ $4,700</strong> — 35.0% (market price 0.00)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی commodities: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>commodities</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (8 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ $4,700</td><td>35.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $4,000</td><td>11.7%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $3,900</td><td>7.8%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $3,800</td><td>3.9%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $3,700</td><td>3.9%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $3,600</td><td>3.9%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $3,500</td><td>3.9%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $3,400</td><td>29.9%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3096357&quot;, &quot;question&quot;: &quot;Will Gold (XAUUSD) hit (HIGH) $4,700 in August?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.002, 0.998], &quot;end_date&quot;: &quot;2026-09-01T03:59:59.999000+00:00&quot;, &quot;category&quot;: &quot;commodities&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3096357"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-price-will-xagusd-hit-in-august-2026" target="_blank" rel="noopener">What will Silver (XAGUSD) hit in August 2026?</a></h2>
+<p class="signal">🎯 Signal: <strong>↓ $56</strong> — 35.0% (market price 0.01)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی commodities: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>commodities</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (7 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↓ $56</td><td>35.0%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $54</td><td>22.9%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $72</td><td>4.6%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $52</td><td>4.6%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $50</td><td>2.3%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $48</td><td>2.3%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $46</td><td>28.3%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3096382&quot;, &quot;question&quot;: &quot;Will Silver (XAGUSD) hit (HIGH) $72 in August?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.001, 0.999], &quot;end_date&quot;: &quot;2026-09-01T03:59:59.999000+00:00&quot;, &quot;category&quot;: &quot;commodities&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3096382"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-price-will-wti-hit-in-august-2026" target="_blank" rel="noopener">What will WTI Crude Oil (WTI) hit in August 2026?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ $90</strong> — 35.0% (market price 0.00)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی commodities: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>commodities</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (19 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ $90</td><td>35.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $75</td><td>4.1%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $150</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $140</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $130</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $120</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $110</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $100</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $70</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $60</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $50</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $40</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $30</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $20</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $95</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $105</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $115</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $65</td><td>2.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $55</td><td>28.1%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3096407&quot;, &quot;question&quot;: &quot;Will WTI Crude Oil (WTI) hit (HIGH) $150 in August?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0005, 0.9995], &quot;end_date&quot;: &quot;2026-09-01T03:59:59.999000+00:00&quot;, &quot;category&quot;: &quot;commodities&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3096407"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-price-will-ng-hit-in-august-2026" target="_blank" rel="noopener">What will Natural Gas (NG) hit in August 2026?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ $3.00</strong> — 41.8% (market price 0.40)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی commodities: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>commodities</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (13 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ $3.00</td><td>41.8%</td><td>0.40</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $3.20</td><td>17.6%</td><td>0.05</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $3.40</td><td>3.5%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $3.80</td><td>3.1%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $2.60</td><td>1.8%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $4.20</td><td>1.5%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $4.00</td><td>1.5%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ $3.60</td><td>1.5%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $1.80</td><td>1.5%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $2.20</td><td>1.0%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $2.00</td><td>0.8%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $1.60</td><td>0.7%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ $2.40</td><td>23.8%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3096424&quot;, &quot;question&quot;: &quot;Will Natural Gas (NG) hit (HIGH) $4.20 in August?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0045, 0.9955], &quot;end_date&quot;: &quot;2026-09-01T03:59:59.999000+00:00&quot;, &quot;category&quot;: &quot;commodities&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3096424"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026" target="_blank" rel="noopener">What price will Bitcoin hit in August?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ 82,500</strong> — 35.0% (market price 0.01)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی crypto: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>crypto</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (13 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ 82,500</td><td>35.0%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 85,000</td><td>12.2%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 100,000</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 60,000</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 57,500</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 55,000</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 52,500</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 50,000</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 47,500</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 45,000</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 42,500</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 40,000</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 62,500</td><td>28.4%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3257332&quot;, &quot;question&quot;: &quot;Will Bitcoin reach $100,000 in August?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.0005, 0.9995], &quot;end_date&quot;: &quot;2026-09-01T04:00:00+00:00&quot;, &quot;category&quot;: &quot;crypto&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3257332"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-price-will-ethereum-hit-in-august-2026" target="_blank" rel="noopener">What price will Ethereum hit in August?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ 2,600</strong> — 35.0% (market price 0.02)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی crypto: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>crypto</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (13 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ 2,600</td><td>35.0%</td><td>0.02</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 2,700</td><td>9.8%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 3,000</td><td>4.9%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,800</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,700</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,600</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,500</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,400</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,300</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,200</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,100</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 1,000</td><td>2.4%</td><td>0.00</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 900</td><td>28.4%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3257382&quot;, &quot;question&quot;: &quot;Will Ethereum reach $3,000 in August?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.001, 0.999], &quot;end_date&quot;: &quot;2026-09-01T04:00:00+00:00&quot;, &quot;category&quot;: &quot;crypto&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3257382"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-will-the-ethereum-implied-volatility-index-hit-by-august-31-2026" target="_blank" rel="noopener">What will the Ethereum Implied Volatility Index hit by August 31?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ 70</strong> — 35.0% (market price 0.06)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی crypto: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>crypto</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (8 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ 70</td><td>35.0%</td><td>0.06</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 65</td><td>10.5%</td><td>0.03</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 80</td><td>8.3%</td><td>0.02</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 45</td><td>6.5%</td><td>0.02</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 40</td><td>5.2%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 35</td><td>4.0%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 90</td><td>2.8%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 100</td><td>27.6%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3268534&quot;, &quot;question&quot;: &quot;Will the Ethereum Volatility Index hit 100 by August 31?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.004, 0.996], &quot;end_date&quot;: &quot;2026-09-01T04:00:00+00:00&quot;, &quot;category&quot;: &quot;crypto&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3268534"></div></div>
+</article>
+<article class="market-card">
+<h2><a href="https://polymarket.com/event/what-will-the-bitcoin-implied-volatility-index-hit-by-august-31-2026" target="_blank" rel="noopener">What will the Bitcoin Implied Volatility index hit by August 31?</a></h2>
+<p class="signal">🎯 Signal: <strong>↑ 55</strong> — 35.0% (market price 0.07)</p>
+<p class="margin">✅ Guaranteed net if primary wins: <strong>+5.0%</strong></p>
+<p class="warning">⚠️ no independent sources available — sized at floor, using market-implied favorite (برای دسته‌ی crypto: یا کلید API مربوطه در .env خالی است، یا سؤال این بازار آستانه‌ی عددی صریح ندارد که مدل فعلی بتواند از آن تخمین بزند — این محدودیت مدل است، نه فقط کلید، و دقیقاً موضوع کالیبراسیون فاز ۷ است.)</p>
+<p class="meta">Category: <strong>crypto</strong> &middot; Resolves in <strong>0.4d</strong> &middot; Consensus: <strong>0</strong> (0 sources) &middot; Edge: <strong>0.0%</strong></p>
+<details>
+<summary>Full position plan (7 outcome(s))</summary>
+<table>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<tbody>
+<tr><td style="color:#1a7f37;font-weight:600">Primary</td><td>↑ 55</td><td>35.0%</td><td>0.07</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 70</td><td>11.3%</td><td>0.03</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 60</td><td>11.3%</td><td>0.03</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↑ 50</td><td>5.8%</td><td>0.02</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 35</td><td>5.7%</td><td>0.02</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 25</td><td>3.8%</td><td>0.01</td></tr><tr><td style="color:#0969da;font-weight:600">Secondary</td><td>↓ 30</td><td>27.1%</td><td>0.00</td></tr>
+</tbody>
+</table>
+</details>
+<hr class="ai-sep">
+<div class="ai-widget"><button type="button" class="ai-btn" data-market="{&quot;market_id&quot;: &quot;3268544&quot;, &quot;question&quot;: &quot;Will the Bitcoin Volatility Index hit 70 by August 31?&quot;, &quot;outcomes&quot;: [&quot;Yes&quot;, &quot;No&quot;], &quot;outcome_prices&quot;: [0.031, 0.969], &quot;end_date&quot;: &quot;2026-09-01T04:00:00+00:00&quot;, &quot;category&quot;: &quot;crypto&quot;}" onclick="runAiAnalysis(this)">🧠 AI Analysis</button><div class="ai-result" id="ai-result-3268544"></div></div>
+</article>
+</section>
+<script>
+function filterSection(btn) {
+  const target = btn.getAttribute('data-target');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.market-section').forEach(sec => {
+    sec.style.display = (target === 'all' || sec.getAttribute('data-section') === target) ? '' : 'none';
+  });
+}
+const AI_WORKER_URL = "https://polybet-ai-research.ericlamar008.workers.dev/";
+async function runAiAnalysis(btn) {
+  const market = JSON.parse(btn.getAttribute('data-market'));
+  const resultDiv = document.getElementById('ai-result-' + market.market_id);
+  resultDiv.innerHTML = '...';
+  btn.disabled = true;
+  try {
+    const resp = await fetch(AI_WORKER_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(market)
+    });
+    const data = await resp.json();
+    if (data.error) { resultDiv.innerHTML = data.error; return; }
+    let out = '';
+    out += '<p><strong>Summary:</strong> ' + data.summary + '</p>';
+    if (data.sources && data.sources.length) {
+      out += '<p><strong>Sources:</strong></p><ul>';
+      for (const s of data.sources) {
+        const label = s.name + (s.date ? ' (' + s.date + ')' : '');
+        out += s.url ? ('<li><a href="' + s.url + '" target="_blank" rel="noopener">' + label + '</a></li>') : ('<li>' + label + '</li>');
+      }
+      out += '</ul>';
+    }
+    out += '<p><strong>Confidence:</strong> ' + data.confidence + '</p>';
+    if (data.alternative_signal) {
+      const s = data.alternative_signal;
+      out += '<p><strong>Alt signal:</strong> ' + s.primary.outcome + ' ' + s.primary.size_pct + '%</p>';
+      if (s.hedge) {
+        out += '<p>Hedge: ' + s.hedge.outcome + ' ' + s.hedge.size_pct + '% (stop-loss ' + s.hedge.stop_loss_pct + '%)</p>';
+      }
+      out += '<p>Net if primary wins/loses: ' + s.net_profit_if_primary_wins_pct + '% / ' + s.net_profit_if_primary_loses_pct + '%</p>';
+    }
+    if (data.cached) { out += '<p style="color:#57606a;font-size:0.8rem">(cached)</p>'; }
+    resultDiv.innerHTML = out;
+  } catch (e) {
+    resultDiv.innerHTML = e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
