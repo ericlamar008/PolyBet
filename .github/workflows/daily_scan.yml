@@ -1,0 +1,64 @@
+# .github/workflows/daily_scan.yml
+# PLACEMENT: .github/workflows/daily_scan.yml (exact path)
+#
+# TIME CHOSEN: 17:12 UTC daily.
+# Reasoning (see chat for sources):
+#  - US BLS/BEA release major economic data at 8:30 AM ET every release day;
+#    FRED usually has same-day series updates a few hours later, so 17:12 UTC
+#    (~noon-1pm ET) gives a safe buffer before the bot reads FRED/BEA/etc.
+#  - 17:00 UTC is documented as Polymarket's single busiest trading hour,
+#    meaning market prices are most liquid/stable right when this bot reads
+#    them for position sizing.
+#  - :12 minutes (not :00) avoids GitHub Actions' top-of-hour congestion.
+# That's 20:42 Iran time, ~12:12-13:12 PM US Eastern depending on US DST.
+# To change: edit the two numbers in the cron line below (minute hour).
+
+name: PolyBet Daily Scan
+
+on:
+  schedule:
+    - cron: "12 17 * * *"   # 17:12 UTC = ~20:42 Iran time
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polybet-daily-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run PolyBet scan
+        env:
+          SEND_LIVE_SIGNALS: "true"
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
+        run: python main.py
+
+      - name: Commit updated dashboard + log
+        run: |
+          git config user.name "polybet-bot"
+          git config user.email "polybet-bot@users.noreply.github.com"
+          git add docs/index.html predictions_log.csv
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Daily scan: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
