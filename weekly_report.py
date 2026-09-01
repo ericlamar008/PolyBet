@@ -1,37 +1,40 @@
 """
-weekly_report.py — Phase 7 (calibration): checks which past signals actually
-resolved correctly, sends a Telegram summary, and writes the full historical
-docs/results.html dashboard.
+weekly_report.py — Phase 7 (calibration) + ONE-TIME diagnostic mode.
 
-Place this file in the ROOT of your repo, next to main.py.
+THIS IS THE LATEST VERSION. If you already have a file named weekly_report.py
+or weekly_report-2.py from earlier in this chat, DELETE it from your repo and
+use THIS one instead -- it is NEWER and fixes a real bug the earlier one had.
 
-BUG FIX in this version
--------------------------
-The resolution-matching logic had a real bug: when a STANDALONE binary
-(Yes/No) market resolved "Yes", the code returned the market's QUESTION TEXT
-as the "winner" instead of the literal word "Yes" -- but predictions_log.csv
-always logs "Yes"/"No" as primary_outcome for standalone markets. Comparing
-"Yes" against a whole sentence always failed, so almost every non-election
-signal was scored as incorrect regardless of whether it actually was.
-FIXED: the winner label is now `groupItemTitle` ONLY when the market
-actually has one (i.e. it's part of a grouped/categorical event, like an
-election with multiple candidates); otherwise it's the raw outcome text
-("Yes"/"No"), which is exactly what's logged for standalone markets.
+WHAT THIS VERSION FIXES vs the one you just tested
+------------------------------------------------------
+Your previous file returned the label of the FIRST closed sub-market it
+found, whether that sub-market settled "Yes" OR "No". For multi-threshold
+markets (Gold/Oil/SPY/Bitcoin price buckets, where MANY thresholds settle
+"No" and only some settle "Yes"), this often grabbed a losing bucket (or
+just "No") by accident instead of searching specifically for the one that
+actually settled "Yes".
 
-NEW: after resolving predictions, writes docs/results.html (full history,
-every prediction ever logged -- not just the trailing 7 days used in the
-Telegram message) via results_html_generator.py. The Telegram report now
-also includes a link to that page if DASHBOARD_URL is set.
+THIS version specifically searches ALL sub-markets for the one that
+settled "Yes" (the real winner), and only falls back to "No" for genuinely
+standalone (single-market, no real grouping) events.
 
-USAGE
-------
-    python weekly_report.py                # normal run, sends Telegram msg
-    python weekly_report.py --dry-run      # prints the report, doesn't send
+HOW TO USE THE DIAGNOSTIC (do this once, then we fix it for real if needed)
+-------------------------------------------------------------------------------
+1. In GitHub, add a new repository secret: DEBUG_RESOLUTION = true
+2. In .github/workflows/weekly_report.yml, inside the `env:` block of the
+   "Run report" step, add this line:
+       DEBUG_RESOLUTION: ${{ secrets.DEBUG_RESOLUTION }}
+3. Run "PolyBet Weekly Report" manually once (Actions tab -> Run workflow).
+4. Open that run's log, expand "Run report", find the block between
+   "===== RAW EVENT JSON (first slug) =====" and
+   "===== END RAW EVENT JSON =====", copy it, send it to me.
+5. Afterwards, set DEBUG_RESOLUTION back to "false" (or delete the secret).
 """
 
 from __future__ import annotations
 
 import csv
+import json
 import logging
 import os
 import sys
@@ -51,6 +54,8 @@ logger = logging.getLogger(__name__)
 GAMMA_EVENTS_ENDPOINT = "https://gamma-api.polymarket.com/events"
 REQUEST_TIMEOUT_SECONDS = 15
 RESOLVED_PRICE_THRESHOLD = 0.99  # a price >= this counts as "settled winner"
+DEBUG_RESOLUTION = os.getenv("DEBUG_RESOLUTION", "false").lower() == "true"
+_debug_already_printed = False  # module-level flag so we only dump ONE example per run
 
 PREDICTIONS_LOG_PATH = os.getenv("PREDICTIONS_LOG_PATH", "predictions_log.csv")
 PREDICTIONS_RESOLVED_PATH = os.getenv("PREDICTIONS_RESOLVED_PATH", "predictions_resolved.csv")
@@ -93,63 +98,92 @@ def slug_from_url(url: str) -> str | None:
     return parts[-1] if parts else None
 
 
-def fetch_event_resolution(slug: str, session: requests.Session) -> tuple[str | None, bool]:
-    """Returns (winning_outcome_label_or_None, any_market_closed).
+def _parse_json_field(value) -> list:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return []
+    return []
 
-    The winner label is:
-      - the sub-market's `groupItemTitle`, IF it has one (grouped /
-        categorical event -- an election with multiple candidates, a
-        multi-bucket economic release, etc.) -- that's the real-world
-        "thing that won" (a candidate name, a price bucket, ...).
-      - otherwise, the raw settled outcome text ("Yes" or "No") -- this is
-        a plain standalone binary market, and "Yes"/"No" is exactly what
-        predictions_log.csv logs as primary_outcome for those.
-    """
+
+def _parse_outcomes(market: dict) -> tuple[list[str], list[float]]:
+    outcomes = _parse_json_field(market.get("outcomes"))
+    prices_raw = _parse_json_field(market.get("outcomePrices"))
+    try:
+        prices = [float(p) for p in prices_raw]
+    except (TypeError, ValueError):
+        prices = []
+    if not outcomes or not prices or len(outcomes) != len(prices):
+        return [], []
+    return outcomes, prices
+
+
+def fetch_event_markets(slug: str, session: requests.Session) -> list[dict] | None:
+    global _debug_already_printed
     try:
         resp = session.get(GAMMA_EVENTS_ENDPOINT, params={"slug": slug}, timeout=REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
         data = resp.json()
     except (requests.RequestException, ValueError) as exc:
-        logger.warning("Could not fetch resolution for slug=%s: %s", slug, exc)
-        return None, False
+        logger.warning("Could not fetch event for slug=%s: %s", slug, exc)
+        return None
+
+    if DEBUG_RESOLUTION and not _debug_already_printed:
+        _debug_already_printed = True
+        logger.info("===== RAW EVENT JSON (first slug) =====")
+        logger.info("slug=%s", slug)
+        logger.info(json.dumps(data, indent=2)[:6000])
+        logger.info("===== END RAW EVENT JSON =====")
 
     events = data if isinstance(data, list) else data.get("data", [])
     if not events:
-        return None, False
-    event = events[0]
-    sub_markets = event.get("markets", [])
-    any_closed = False
+        return None
+    return events[0].get("markets", [])
 
-    for market in sub_markets:
-        if not market.get("closed"):
-            continue
-        any_closed = True
-        outcomes = market.get("outcomes")
-        prices = market.get("outcomePrices")
-        if isinstance(outcomes, str):
-            import json
-            try:
-                outcomes = json.loads(outcomes)
-            except json.JSONDecodeError:
-                outcomes = []
-        if isinstance(prices, str):
-            import json
-            try:
-                prices = json.loads(prices)
-            except json.JSONDecodeError:
-                prices = []
-        prices = [float(p) for p in (prices or [])]
-        if not outcomes or not prices or len(outcomes) != len(prices):
-            continue
 
-        group_item_title = (market.get("groupItemTitle") or "").strip()
+def resolve_single_prediction(slug: str, primary_outcome: str, session: requests.Session) -> tuple[str | None, bool | None, bool]:
+    """Returns (resolved_outcome_label, is_correct, any_closed)."""
+    sub_markets = fetch_event_markets(slug, session)
+    if not sub_markets:
+        return None, None, False
+
+    any_closed = any(m.get("closed") for m in sub_markets)
+    if not any_closed:
+        return None, None, False
+
+    primary_norm = (primary_outcome or "").strip().lower()
+
+    if len(sub_markets) == 1:
+        outcomes, prices = _parse_outcomes(sub_markets[0])
         for outcome, price in zip(outcomes, prices):
             if price >= RESOLVED_PRICE_THRESHOLD:
-                if group_item_title:
-                    return group_item_title, True
-                return outcome.strip(), True
+                settled = outcome.strip()
+                return settled, settled.lower() == primary_norm, True
+        return None, None, True
 
-    return None, any_closed
+    # Search ALL sub-markets specifically for the one that settled "Yes" --
+    # do NOT stop at the first closed one regardless of its outcome, since
+    # most buckets in a multi-threshold group settle "No".
+    for market in sub_markets:
+        outcomes, prices = _parse_outcomes(market)
+        for outcome, price in zip(outcomes, prices):
+            if price >= RESOLVED_PRICE_THRESHOLD and outcome.strip().lower() == "yes":
+                label = (market.get("groupItemTitle") or "").strip()
+                if not label:
+                    question = (market.get("question") or "").lower()
+                    if primary_norm and primary_norm in question:
+                        label = primary_outcome.strip()
+                    else:
+                        label = (market.get("question") or "Yes").strip()
+                is_correct = label.strip().lower() == primary_norm
+                return label, is_correct, True
+
+    return None, None, True
 
 
 def resolve_predictions(log_rows: list[dict], cache: dict[tuple[str, str], dict]) -> list[dict]:
@@ -163,9 +197,6 @@ def resolve_predictions(log_rows: list[dict], cache: dict[tuple[str, str], dict]
             resolved.append(cached)
             continue
 
-        slug = slug_from_url(row.get("market_url", ""))
-        winner, any_closed = (None, False) if not slug else fetch_event_resolution(slug, session)
-
         base = {
             "group_key": row.get("group_key", ""), "title": row.get("title", ""),
             "category": row.get("category", ""), "logged_at_utc": row.get("logged_at_utc", ""),
@@ -175,17 +206,16 @@ def resolve_predictions(log_rows: list[dict], cache: dict[tuple[str, str], dict]
             "primary_market_price": row.get("primary_market_price", ""),
         }
 
-        if winner is None:
-            resolved.append({
-                **base, "resolved_outcome": "", "is_correct": "",
-                "checked_at_utc": datetime.now(timezone.utc).isoformat(),
-            })
+        slug = slug_from_url(row.get("market_url", ""))
+        if not slug:
+            resolved.append({**base, "resolved_outcome": "", "is_correct": "", "checked_at_utc": datetime.now(timezone.utc).isoformat()})
             continue
 
-        primary = (row.get("primary_outcome") or "").strip().lower()
-        is_correct = winner.strip().lower() == primary
+        winner, is_correct, _any_closed = resolve_single_prediction(slug, row.get("primary_outcome", ""), session)
         resolved.append({
-            **base, "resolved_outcome": winner, "is_correct": str(is_correct),
+            **base,
+            "resolved_outcome": winner or "",
+            "is_correct": "" if is_correct is None else str(is_correct),
             "checked_at_utc": datetime.now(timezone.utc).isoformat(),
         })
 
