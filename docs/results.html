@@ -5,566 +5,687 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PolyBet — تاریخچه‌ی نتایج سیگنال‌ها</title>
 <style>
-body { font-family: -apple-system, "Segoe UI", Tahoma, sans-serif; max-width: 960px; margin: 0 auto; padding: 0 1rem 2rem; color: #1f2328; }
-h1 { font-size: 1.4rem; margin-top: 1.5rem; }
-.generated-at { color: #57606a; font-size: 0.85rem; margin-bottom: 1rem; }
-.summary-box { border: 1px solid #d0d7de; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; background: #f6f8fa; }
-.big-stat { font-size: 1.2rem; margin-bottom: 0.5rem; }
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 0.6rem; }
-th, td { text-align: right; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eaeef2; }
-table.category-stats { max-width: 420px; }
-.section-nav { position: sticky; top: 0; z-index: 10; background: #fff; display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.6rem 0; border-bottom: 1px solid #d0d7de; margin-bottom: 1rem; }
-.nav-btn { border: 1px solid #d0d7de; background: #f6f8fa; color: #1f2328; border-radius: 999px; padding: 0.35rem 0.85rem; font-size: 0.82rem; cursor: pointer; }
+* { box-sizing: border-box; }
+body {
+  font-family: "Vazirmatn", "Segoe UI", Tahoma, -apple-system, sans-serif;
+  max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 3rem;
+  background: #f6f8fa; color: #1f2328; line-height: 1.6;
+}
+h1 { font-size: 1.5rem; margin-top: 1.75rem; }
+.generated-at { color: #6e7781; font-size: 0.85rem; margin-bottom: 1.25rem; }
+
+.summary-box {
+  background: #fff; border-radius: 14px; padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(31,35,40,0.08);
+}
+.big-stat { font-size: 1.4rem; margin-bottom: 0.75rem; }
+.big-stat strong { color: #0969da; }
+.sub-stats { color: #57606a; font-size: 0.9rem; margin-bottom: 1rem; }
+
+.cat-stat-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; }
+.cat-stat-card {
+  background: #f6f8fa; border-radius: 10px; padding: 0.75rem 1rem;
+  min-width: 130px; text-align: center;
+}
+.cat-stat-num { font-size: 1.1rem; font-weight: 700; margin-top: 0.4rem; }
+.cat-stat-rate { font-size: 0.78rem; color: #57606a; }
+
+.section-nav {
+  position: sticky; top: 0; z-index: 10; background: #f6f8fa;
+  display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem 0;
+  margin-bottom: 1.25rem;
+}
+.nav-btn {
+  border: 1px solid #d0d7de; background: #fff; color: #1f2328;
+  border-radius: 999px; padding: 0.4rem 1rem; font-size: 0.85rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.nav-btn:hover { background: #eaeef2; }
 .nav-btn.active { background: #0969da; border-color: #0969da; color: #fff; }
-.section-title { font-size: 1.05rem; padding: 0.6rem 0; cursor: pointer; }
+
+section { background: #fff; border-radius: 14px; padding: 0.5rem 1.5rem 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(31,35,40,0.08); }
+summary.section-title { font-size: 1.05rem; padding: 1rem 0; cursor: pointer; font-weight: 700; list-style: none; }
+summary.section-title::-webkit-details-marker { display: none; }
+summary.section-title::before { content: "▾ "; font-size: 0.8em; }
 .section-title.success { color: #1a7f37; }
 .section-title.failure { color: #cf222e; }
 .section-title.pending { color: #9a6700; }
-.empty { color: #57606a; font-size: 0.85rem; }
-a { color: #0969da; text-decoration: none; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 720px; }
+th { text-align: right; padding: 0.6rem 0.7rem; color: #57606a; font-weight: 600; border-bottom: 2px solid #eaeef2; white-space: nowrap; }
+td { text-align: right; padding: 0.65rem 0.7rem; border-bottom: 1px solid #eaeef2; vertical-align: middle; }
+tbody tr:hover { background: #f6f8fa; }
+.col-date { color: #6e7781; font-size: 0.8rem; white-space: nowrap; }
+.col-title { max-width: 280px; }
+
+.cat-badge { padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+
+.ret-pill { padding: 0.2rem 0.55rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
+.ret-positive { background: #dafbe1; color: #1a7f37; }
+.ret-negative { background: #ffebe9; color: #cf222e; }
+.ret-neutral { background: #f6f8fa; color: #6e7781; }
+
+.row-link {
+  display: inline-block; background: #0969da; color: #fff !important;
+  padding: 0.3rem 0.7rem; border-radius: 6px; font-size: 0.78rem;
+  text-decoration: none; white-space: nowrap; font-weight: 600;
+}
+.row-link:hover { background: #0550ae; }
+.empty-link { color: #8c959f; }
+
+.empty { color: #6e7781; font-size: 0.85rem; padding: 1rem 0; }
 </style>
 </head>
 <body>
 <h1>📈 تاریخچه‌ی کامل نتایج سیگنال‌های PolyBet</h1>
-<p class="generated-at">به‌روزرسانی: 2026-09-01 20:44 UTC</p>
+<p class="generated-at">به‌روزرسانی: 2026-09-01 20:55 UTC</p>
 
 <div class="summary-box">
-  <div class="big-stat">🎯 درصد موفقیت کلی: <strong>0.0%</strong> (0/26)</div>
-  <div>🔢 کل سیگنال‌های ثبت‌شده: 63 &middot; نتیجه‌دار: 26 &middot; در انتظار: 37</div>
-  <table class="category-stats">
-<thead><tr><th>دسته</th><th>تعداد نتیجه‌دار</th><th>درصد موفقیت</th></tr></thead>
-<tbody><tr><td>commodities</td><td>0/10</td><td>0%</td></tr><tr><td>crypto</td><td>0/8</td><td>0%</td></tr><tr><td>elections</td><td>0/4</td><td>0%</td></tr><tr><td>stocks</td><td>0/2</td><td>0%</td></tr><tr><td>gdp</td><td>0/2</td><td>0%</td></tr></tbody>
-</table>
+  <div class="big-stat">🎯 درصد موفقیت کلی: <strong>8.3%</strong> <span style="color:#57606a;font-size:0.9rem">(2/24)</span></div>
+  <div class="sub-stats">🔢 کل سیگنال‌ها: 63 &nbsp;·&nbsp; نتیجه‌دار: 24 &nbsp;·&nbsp; در انتظار: 39</div>
+  <div class="cat-stat-grid"><div class="cat-stat-card"><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span><div class="cat-stat-num">0/8</div><div class="cat-stat-rate">0% موفقیت</div></div><div class="cat-stat-card"><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span><div class="cat-stat-num">0/8</div><div class="cat-stat-rate">0% موفقیت</div></div><div class="cat-stat-card"><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span><div class="cat-stat-num">0/4</div><div class="cat-stat-rate">0% موفقیت</div></div><div class="cat-stat-card"><span class="cat-badge" style="background:#1a7f371a;color:#1a7f37">stocks</span><div class="cat-stat-num">0/2</div><div class="cat-stat-rate">0% موفقیت</div></div><div class="cat-stat-card"><span class="cat-badge" style="background:#0969da1a;color:#0969da">gdp</span><div class="cat-stat-num">2/2</div><div class="cat-stat-rate">100% موفقیت</div></div></div>
 </div>
 
 <nav class="section-nav"><button type="button" class="nav-btn active" data-target="all" onclick="filterCategory(this)">همه</button><button type="button" class="nav-btn" data-target="boc" onclick="filterCategory(this)">boc</button><button type="button" class="nav-btn" data-target="boe" onclick="filterCategory(this)">boe</button><button type="button" class="nav-btn" data-target="central_banks_other" onclick="filterCategory(this)">central_banks_other</button><button type="button" class="nav-btn" data-target="commodities" onclick="filterCategory(this)">commodities</button><button type="button" class="nav-btn" data-target="crypto" onclick="filterCategory(this)">crypto</button><button type="button" class="nav-btn" data-target="elections" onclick="filterCategory(this)">elections</button><button type="button" class="nav-btn" data-target="employment" onclick="filterCategory(this)">employment</button><button type="button" class="nav-btn" data-target="gdp" onclick="filterCategory(this)">gdp</button><button type="button" class="nav-btn" data-target="stocks" onclick="filterCategory(this)">stocks</button></nav>
 
 <section>
 <details open>
-<summary class="section-title success">✅ سیگنال‌های موفق (0)</summary>
-<p class="empty">موردی نیست.</p>
+<summary class="section-title success">✅ سیگنال‌های موفق (2)</summary>
+<div class="table-wrap">
+<table>
+<thead><tr><th>تاریخ</th><th>نام بازار</th><th>دسته</th><th>سیگنال ربات</th><th>باکت/نتیجه‌ی برنده</th><th>بازدهی</th><th>لینک</th></tr></thead>
+<tbody><tr data-category="gdp">
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">Brazil GDP Growth in Q2 2026 (QoQ)?</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">gdp</span></td>
+<td>0.3%–0.5%</td>
+<td><strong>0.3%–0.5%</strong></td>
+<td><span class="ret-pill ret-positive">+24.9%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/brazil-gdp-growth-in-q2-2026-qoq" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
+</tr>
+<tr data-category="gdp">
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">Brazil GDP Growth in Q2 2026 (QoQ)?</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">gdp</span></td>
+<td>0.3%–0.5%</td>
+<td><strong>0.3%–0.5%</strong></td>
+<td><span class="ret-pill ret-positive">+25.2%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/brazil-gdp-growth-in-q2-2026-qoq" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
+</tr></tbody>
+</table>
+</div>
 </details>
 </section>
 
 <section>
 <details open>
-<summary class="section-title failure">❌ سیگنال‌های ناموفق (26)</summary>
+<summary class="section-title failure">❌ سیگنال‌های ناموفق (22)</summary>
+<div class="table-wrap">
 <table>
-<thead><tr><th>تاریخ</th><th>نام بازار</th><th>دسته</th><th>سیگنال ربات</th><th>نتیجه‌ی نهایی</th><th>بازدهی (Primary)</th></tr></thead>
-<tbody><tr data-category="gdp">
-<td>2026-08-31 19:32</td>
-<td>Brazil GDP Growth in Q2 2026 (QoQ)?</td>
-<td>gdp</td>
-<td>0.3%–0.5%</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
-</tr>
-<tr data-category="crypto">
-<td>2026-08-31 19:32</td>
-<td>What will the Bitcoin Implied Volatility index hit by August 31?</td>
-<td>crypto</td>
+<thead><tr><th>تاریخ</th><th>نام بازار</th><th>دسته</th><th>سیگنال ربات</th><th>باکت/نتیجه‌ی برنده</th><th>بازدهی</th><th>لینک</th></tr></thead>
+<tbody><tr data-category="crypto">
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What will the Bitcoin Implied Volatility index hit by August 31?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 55</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 45</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-will-the-bitcoin-implied-volatility-index-hit-by-august-31-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="crypto">
-<td>2026-08-31 19:32</td>
-<td>What will the Ethereum Implied Volatility Index hit by August 31?</td>
-<td>crypto</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What will the Ethereum Implied Volatility Index hit by August 31?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 70</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 60</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-will-the-ethereum-implied-volatility-index-hit-by-august-31-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="crypto">
-<td>2026-08-31 19:32</td>
-<td>What price will Ethereum hit in August?</td>
-<td>crypto</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What price will Ethereum hit in August?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 2,600</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 2,500</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-ethereum-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="crypto">
-<td>2026-08-31 19:32</td>
-<td>What price will Bitcoin hit in August?</td>
-<td>crypto</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What price will Bitcoin hit in August?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 82,500</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 80,000</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:32</td>
-<td>What will Natural Gas (NG) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What will Natural Gas (NG) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↑ $3.00</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↓ $2.80</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-ng-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:32</td>
-<td>What will WTI Crude Oil (WTI) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What will WTI Crude Oil (WTI) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↑ $90</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↓ $80</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-wti-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:32</td>
-<td>What will Silver (XAGUSD) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What will Silver (XAGUSD) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↓ $56</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ $70</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-xagusd-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:32</td>
-<td>What will Gold (XAUUSD) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What will Gold (XAUUSD) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↑ $4,700</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ $4,600</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-xauusd-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="stocks">
-<td>2026-08-31 19:32</td>
-<td>What will S&amp;P 500 (SPY) hit in August 2026?</td>
-<td>stocks</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">What will S&amp;P 500 (SPY) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#1a7f371a;color:#1a7f37">stocks</span></td>
 <td>↑ $790</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ $770</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-spy-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">Will Wisconsin order a Democratic governor primary recount by August 31?</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Will Wisconsin order a Democratic governor primary recount by August 31?</td>
-<td>elections</td>
-<td>Will Wisconsin order a Democratic governor primary recount by August 31?</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>No</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/will-wisconsin-order-a-democratic-governor-primary-recount-by-august-31-20260812123408427" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">Mitch McConnell votes in the Senate by August 31?</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Mitch McConnell votes in the Senate by August 31?</td>
-<td>elections</td>
-<td>Mitch McConnell votes in the Senate by August 31?</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
-</tr>
-<tr data-category="commodities">
-<td>2026-08-31 19:32</td>
-<td>US reissues Iran oil sales sanction relief by...?</td>
-<td>commodities</td>
-<td>August 31</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
-</tr>
-<tr data-category="gdp">
-<td>2026-08-31 19:26</td>
-<td>Brazil GDP Growth in Q2 2026 (QoQ)?</td>
-<td>gdp</td>
-<td>0.3%–0.5%</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>No</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/mitch-mcconnell-votes-in-the-senate-by-august-31-20260729184249668" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="crypto">
-<td>2026-08-31 19:26</td>
-<td>What will the Bitcoin Implied Volatility index hit by August 31?</td>
-<td>crypto</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">What will the Bitcoin Implied Volatility index hit by August 31?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 55</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 45</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-will-the-bitcoin-implied-volatility-index-hit-by-august-31-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="crypto">
-<td>2026-08-31 19:26</td>
-<td>What will the Ethereum Implied Volatility Index hit by August 31?</td>
-<td>crypto</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">What will the Ethereum Implied Volatility Index hit by August 31?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 70</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 60</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-will-the-ethereum-implied-volatility-index-hit-by-august-31-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="crypto">
-<td>2026-08-31 19:26</td>
-<td>What price will Ethereum hit in August?</td>
-<td>crypto</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">What price will Ethereum hit in August?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 2,600</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 2,500</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-ethereum-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="crypto">
-<td>2026-08-31 19:26</td>
-<td>What price will Bitcoin hit in August?</td>
-<td>crypto</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">What price will Bitcoin hit in August?</td>
+<td><span class="cat-badge" style="background:#cf222e1a;color:#cf222e">crypto</span></td>
 <td>↑ 82,500</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ 80,000</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-bitcoin-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:26</td>
-<td>What will Natural Gas (NG) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">What will Natural Gas (NG) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↑ $3.00</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↓ $2.80</strong></td>
+<td><span class="ret-pill ret-negative">-41.8%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-ng-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:26</td>
-<td>What will WTI Crude Oil (WTI) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">What will WTI Crude Oil (WTI) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↑ $90</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↓ $80</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-wti-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:25</td>
-<td>What will Silver (XAGUSD) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">What will Silver (XAGUSD) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↓ $56</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ $70</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-xagusd-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="commodities">
-<td>2026-08-31 19:25</td>
-<td>What will Gold (XAUUSD) hit in August 2026?</td>
-<td>commodities</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">What will Gold (XAUUSD) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
 <td>↑ $4,700</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ $4,600</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-xauusd-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="stocks">
-<td>2026-08-31 19:25</td>
-<td>What will S&amp;P 500 (SPY) hit in August 2026?</td>
-<td>stocks</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">What will S&amp;P 500 (SPY) hit in August 2026?</td>
+<td><span class="cat-badge" style="background:#1a7f371a;color:#1a7f37">stocks</span></td>
 <td>↑ $790</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>↑ $770</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/what-price-will-spy-hit-in-august-2026" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:25</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">Will Wisconsin order a Democratic governor primary recount by August 31?</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Will Wisconsin order a Democratic governor primary recount by August 31?</td>
-<td>elections</td>
-<td>Will Wisconsin order a Democratic governor primary recount by August 31?</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>No</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/will-wisconsin-order-a-democratic-governor-primary-recount-by-august-31-20260812123408427" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:25</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">Mitch McConnell votes in the Senate by August 31?</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Mitch McConnell votes in the Senate by August 31?</td>
-<td>elections</td>
-<td>Mitch McConnell votes in the Senate by August 31?</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
-</tr>
-<tr data-category="commodities">
-<td>2026-08-31 19:25</td>
-<td>US reissues Iran oil sales sanction relief by...?</td>
-<td>commodities</td>
-<td>August 31</td>
-<td>No</td>
-<td style="color:#1a7f37;font-weight:600">-0.0%</td>
+<td><strong>No</strong></td>
+<td><span class="ret-pill ret-negative">-35.0%</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/mitch-mcconnell-votes-in-the-senate-by-august-31-20260729184249668" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr></tbody>
 </table>
+</div>
 </details>
 </section>
 
 <section>
 <details>
-<summary class="section-title pending">⏳ در انتظار نتیجه (37)</summary>
+<summary class="section-title pending">⏳ در انتظار نتیجه (39)</summary>
+<div class="table-wrap">
 <table>
-<thead><tr><th>تاریخ</th><th>نام بازار</th><th>دسته</th><th>سیگنال ربات</th><th>نتیجه‌ی نهایی</th><th>بازدهی (Primary)</th></tr></thead>
+<thead><tr><th>تاریخ</th><th>نام بازار</th><th>دسته</th><th>سیگنال ربات</th><th>باکت/نتیجه‌ی برنده</th><th>بازدهی</th><th>لینک</th></tr></thead>
 <tbody><tr data-category="boe">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/nh-01-republican-primary-winner" target="_blank" rel="noopener">NH-01 Republican Primary Winner</a></td>
-<td>boe</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">NH-01 Republican Primary Winner</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">boe</span></td>
 <td>Anthony DiLorenzo</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/nh-01-republican-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/rhode-island-governor-republican-primary-winner" target="_blank" rel="noopener">Rhode Island Governor Republican Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Rhode Island Governor Republican Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Elaine Pelino</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/rhode-island-governor-republican-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/rhode-island-governor-democratic-primary-winner" target="_blank" rel="noopener">Rhode Island Governor Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Rhode Island Governor Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Helena Foulkes</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/rhode-island-governor-democratic-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/new-hampshire-governor-democratic-primary-winner" target="_blank" rel="noopener">New Hampshire Governor Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">New Hampshire Governor Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Cinde Warmington</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/new-hampshire-governor-democratic-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/new-hampshire-governor-republican-primary-winner" target="_blank" rel="noopener">New Hampshire Governor Republican Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">New Hampshire Governor Republican Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Kelly Ayotte</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/new-hampshire-governor-republican-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/rhode-island-republican-senate-primary-winner" target="_blank" rel="noopener">Rhode Island Republican Senate Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Rhode Island Republican Senate Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Raymond McKay</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/rhode-island-republican-senate-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/new-hampshire-republican-senate-primary-winner-296" target="_blank" rel="noopener">New Hampshire Republican Senate Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">New Hampshire Republican Senate Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>John E. Sununu</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/new-hampshire-republican-senate-primary-winner-296" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/rhode-island-democratic-senate-primary-winner" target="_blank" rel="noopener">Rhode Island Democratic Senate Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Rhode Island Democratic Senate Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Jack Reed</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/rhode-island-democratic-senate-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/new-hampshire-democratic-senate-primary-winner" target="_blank" rel="noopener">New Hampshire Democratic Senate Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">New Hampshire Democratic Senate Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Chris Pappas</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/new-hampshire-democratic-senate-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/nh-01-democratic-primary-winner" target="_blank" rel="noopener">NH-01 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">NH-01 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Maura Sullivan</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/nh-01-democratic-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="employment">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/august-unemployment-rate-1786116586124" target="_blank" rel="noopener">August Unemployment Rate</a></td>
-<td>employment</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">August Unemployment Rate</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">employment</span></td>
 <td>4.1%</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/august-unemployment-rate-1786116586124" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="central_banks_other">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/reserve-bank-of-new-zealand-decision-in-september-20260710022000963" target="_blank" rel="noopener">Reserve Bank of New Zealand decision in September?</a></td>
-<td>central_banks_other</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Reserve Bank of New Zealand decision in September?</td>
+<td><span class="cat-badge" style="background:#57606a1a;color:#57606a">central_banks_other</span></td>
 <td>Increase</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/reserve-bank-of-new-zealand-decision-in-september-20260710022000963" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="boc">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/bank-of-canada-decision-in-september-20260701223913897" target="_blank" rel="noopener">Bank of Canada Decision in September?</a></td>
-<td>boc</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Bank of Canada Decision in September?</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">boc</span></td>
 <td>No Change</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/bank-of-canada-decision-in-september-20260701223913897" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/ma-04-democratic-primary-winner-20260727180932560" target="_blank" rel="noopener">MA-04 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">MA-04 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Jake Auchincloss</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-04-democratic-primary-winner-20260727180932560" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/ma-01-democratic-primary-winner-20260727173754524" target="_blank" rel="noopener">MA-01 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">MA-01 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Richard Neal</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-01-democratic-primary-winner-20260727173754524" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="stocks">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/mdb-quarterly-earnings-nongaap-eps-09-01-2026-1pt61" target="_blank" rel="noopener">Will MongoDB (MDB) beat quarterly earnings?</a></td>
-<td>stocks</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Will MongoDB (MDB) beat quarterly earnings?</td>
+<td><span class="cat-badge" style="background:#1a7f371a;color:#1a7f37">stocks</span></td>
 <td>Will MongoDB (MDB) beat quarterly earnings?</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/mdb-quarterly-earnings-nongaap-eps-09-01-2026-1pt61" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="stocks">
-<td>2026-09-01 17:23</td>
-<td><a href="https://polymarket.com/event/panw-quarterly-earnings-nongaap-eps-09-01-2026-0pt98" target="_blank" rel="noopener">Will Palo Alto Networks (PANW) beat quarterly earnings?</a></td>
-<td>stocks</td>
+<td class="col-date">2026-09-01 17:23</td>
+<td class="col-title">Will Palo Alto Networks (PANW) beat quarterly earnings?</td>
+<td><span class="cat-badge" style="background:#1a7f371a;color:#1a7f37">stocks</span></td>
 <td>Will Palo Alto Networks (PANW) beat quarterly earnings?</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/panw-quarterly-earnings-nongaap-eps-09-01-2026-0pt98" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="employment">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/august-unemployment-rate-1786116586124" target="_blank" rel="noopener">August Unemployment Rate</a></td>
-<td>employment</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">August Unemployment Rate</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">employment</span></td>
 <td>4.1%</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/august-unemployment-rate-1786116586124" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="central_banks_other">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/reserve-bank-of-new-zealand-decision-in-september-20260710022000963" target="_blank" rel="noopener">Reserve Bank of New Zealand decision in September?</a></td>
-<td>central_banks_other</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">Reserve Bank of New Zealand decision in September?</td>
+<td><span class="cat-badge" style="background:#57606a1a;color:#57606a">central_banks_other</span></td>
 <td>Increase</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/reserve-bank-of-new-zealand-decision-in-september-20260710022000963" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="boc">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/bank-of-canada-decision-in-september-20260701223913897" target="_blank" rel="noopener">Bank of Canada Decision in September?</a></td>
-<td>boc</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">Bank of Canada Decision in September?</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">boc</span></td>
 <td>No Change</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/bank-of-canada-decision-in-september-20260701223913897" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/ma-04-democratic-primary-winner-20260727180932560" target="_blank" rel="noopener">MA-04 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">MA-04 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Jake Auchincloss</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-04-democratic-primary-winner-20260727180932560" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/ma-01-democratic-primary-winner-20260727173754524" target="_blank" rel="noopener">MA-01 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">MA-01 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Richard Neal</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-01-democratic-primary-winner-20260727173754524" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
+</tr>
+<tr data-category="commodities">
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">US reissues Iran oil sales sanction relief by...?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
+<td>August 31</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/us-reissues-iran-oil-sales-sanction-relief-byptptpt-20260708142359046" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/ma-09-democratic-primary-winner-20260727181858121" target="_blank" rel="noopener">MA-09 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">MA-09 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Bill Keating</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-09-democratic-primary-winner-20260727181858121" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/ma-05-democratic-primary-winner-20260727181542922" target="_blank" rel="noopener">MA-05 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">MA-05 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Katherine Clark</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-05-democratic-primary-winner-20260727181542922" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/ma-08-democratic-primary-winner" target="_blank" rel="noopener">MA-08 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">MA-08 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Stephen Lynch</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-08-democratic-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/massachusetts-governor-republican-primary-winner" target="_blank" rel="noopener">Massachusetts Governor Republican Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">Massachusetts Governor Republican Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Michael Minogue</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/massachusetts-governor-republican-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:32</td>
-<td><a href="https://polymarket.com/event/massachusetts-democratic-senate-primary-winner" target="_blank" rel="noopener">Massachusetts Democratic Senate Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:32</td>
+<td class="col-title">Massachusetts Democratic Senate Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Ed Markey</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/massachusetts-democratic-senate-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="employment">
-<td>2026-08-31 19:26</td>
-<td><a href="https://polymarket.com/event/august-unemployment-rate-1786116586124" target="_blank" rel="noopener">August Unemployment Rate</a></td>
-<td>employment</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">August Unemployment Rate</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">employment</span></td>
 <td>4.1%</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/august-unemployment-rate-1786116586124" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="central_banks_other">
-<td>2026-08-31 19:26</td>
-<td><a href="https://polymarket.com/event/reserve-bank-of-new-zealand-decision-in-september-20260710022000963" target="_blank" rel="noopener">Reserve Bank of New Zealand decision in September?</a></td>
-<td>central_banks_other</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">Reserve Bank of New Zealand decision in September?</td>
+<td><span class="cat-badge" style="background:#57606a1a;color:#57606a">central_banks_other</span></td>
 <td>Increase</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/reserve-bank-of-new-zealand-decision-in-september-20260710022000963" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="boc">
-<td>2026-08-31 19:26</td>
-<td><a href="https://polymarket.com/event/bank-of-canada-decision-in-september-20260701223913897" target="_blank" rel="noopener">Bank of Canada Decision in September?</a></td>
-<td>boc</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">Bank of Canada Decision in September?</td>
+<td><span class="cat-badge" style="background:#0969da1a;color:#0969da">boc</span></td>
 <td>No Change</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/bank-of-canada-decision-in-september-20260701223913897" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:26</td>
-<td><a href="https://polymarket.com/event/ma-04-democratic-primary-winner-20260727180932560" target="_blank" rel="noopener">MA-04 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">MA-04 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Jake Auchincloss</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-04-democratic-primary-winner-20260727180932560" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:26</td>
-<td><a href="https://polymarket.com/event/ma-01-democratic-primary-winner-20260727173754524" target="_blank" rel="noopener">MA-01 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:26</td>
+<td class="col-title">MA-01 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Richard Neal</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-01-democratic-primary-winner-20260727173754524" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
+</tr>
+<tr data-category="commodities">
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">US reissues Iran oil sales sanction relief by...?</td>
+<td><span class="cat-badge" style="background:#9a67001a;color:#9a6700">commodities</span></td>
+<td>August 31</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/us-reissues-iran-oil-sales-sanction-relief-byptptpt-20260708142359046" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:25</td>
-<td><a href="https://polymarket.com/event/ma-09-democratic-primary-winner-20260727181858121" target="_blank" rel="noopener">MA-09 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">MA-09 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Bill Keating</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-09-democratic-primary-winner-20260727181858121" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:25</td>
-<td><a href="https://polymarket.com/event/ma-05-democratic-primary-winner-20260727181542922" target="_blank" rel="noopener">MA-05 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">MA-05 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Katherine Clark</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-05-democratic-primary-winner-20260727181542922" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:25</td>
-<td><a href="https://polymarket.com/event/ma-08-democratic-primary-winner" target="_blank" rel="noopener">MA-08 Democratic Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">MA-08 Democratic Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Stephen Lynch</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/ma-08-democratic-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:25</td>
-<td><a href="https://polymarket.com/event/massachusetts-governor-republican-primary-winner" target="_blank" rel="noopener">Massachusetts Governor Republican Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">Massachusetts Governor Republican Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Michael Minogue</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/massachusetts-governor-republican-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr>
 <tr data-category="elections">
-<td>2026-08-31 19:25</td>
-<td><a href="https://polymarket.com/event/massachusetts-democratic-senate-primary-winner" target="_blank" rel="noopener">Massachusetts Democratic Senate Primary Winner</a></td>
-<td>elections</td>
+<td class="col-date">2026-08-31 19:25</td>
+<td class="col-title">Massachusetts Democratic Senate Primary Winner</td>
+<td><span class="cat-badge" style="background:#8250df1a;color:#8250df">elections</span></td>
 <td>Ed Markey</td>
-<td>—</td>
-<td style="color:#57606a;font-weight:600">—</td>
+<td><strong>—</strong></td>
+<td><span class="ret-pill ret-neutral">—</span></td>
+<td><a class="row-link" href="https://polymarket.com/event/massachusetts-democratic-senate-primary-winner" target="_blank" rel="noopener">🔗 مشاهده بازار</a></td>
 </tr></tbody>
 </table>
+</div>
 </details>
 </section>
 
