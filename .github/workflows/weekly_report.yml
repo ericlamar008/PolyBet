@@ -1,17 +1,25 @@
 # .github/workflows/weekly_report.yml
-# PLACEMENT: .github/workflows/weekly_report.yml (exact path, alongside daily_scan.yml)
+# PLACEMENT: .github/workflows/weekly_report.yml
 #
-# Runs once a week (Sunday night) after the daily scan has already run that
-# day, checks which of the last 7 days' signals have resolved on Polymarket,
-# and sends the success-rate report to Telegram. Also commits the updated
-# predictions_resolved.csv so history isn't lost between runs.
+# Runs on TWO kinds of triggers:
+#   1. schedule (Sunday 18:00 UTC) -- the regular weekly report.
+#   2. workflow_dispatch with input "trigger_source" -- manual runs (from the
+#      Actions tab, or from the Telegram button via the Cloudflare Worker).
+# Both now also (re)write docs/results.html -- the full historical
+# signal-performance dashboard -- and commit it alongside predictions_resolved.csv.
 
 name: PolyBet Weekly Report
 
 on:
   schedule:
-    - cron: "0 18 * * 0"   # Sunday 18:00 UTC = ~21:30 Iran time (after that day's daily scan)
-  workflow_dispatch: {}
+    - cron: "0 18 * * 0"   # Sunday 18:00 UTC = ~21:30 Iran time
+  workflow_dispatch:
+    inputs:
+      trigger_source:
+        description: "Who triggered this run"
+        required: false
+        default: "scheduled"
+        type: string
 
 permissions:
   contents: write
@@ -35,16 +43,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run weekly report
+      - name: Run report
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+          TRIGGER_SOURCE: ${{ inputs.trigger_source || 'scheduled' }}
         run: python weekly_report.py
 
-      - name: Commit updated resolution cache
+      - name: Commit updated resolution cache + results dashboard
         run: |
           git config user.name "polybet-bot"
           git config user.email "polybet-bot@users.noreply.github.com"
-          git add predictions_resolved.csv
-          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Weekly report: $(date -u +'%Y-%m-%d')"
+          git add predictions_resolved.csv docs/results.html
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Report run ($TRIGGER_SOURCE): $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
