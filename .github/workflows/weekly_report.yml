@@ -5,8 +5,12 @@
 #   1. schedule (Sunday 18:00 UTC) -- the regular weekly report.
 #   2. workflow_dispatch with input "trigger_source" -- manual runs (from the
 #      Actions tab, or from the Telegram button via the Cloudflare Worker).
-# Both now also (re)write docs/results.html -- the full historical
-# signal-performance dashboard -- and commit it alongside predictions_resolved.csv.
+#
+# TEMPORARY: DEBUG_RESOLUTION is wired in below so we can dump the raw
+# Polymarket API JSON for one event into the run log, to fix the
+# bucket-name-vs-Yes/No issue for good. Once that's fixed, you can safely
+# set the DEBUG_RESOLUTION secret to "false" (or delete it) -- this line can
+# stay in the file either way, since an unset/false secret just does nothing.
 
 name: PolyBet Weekly Report
 
@@ -48,6 +52,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+          DEBUG_RESOLUTION: ${{ secrets.DEBUG_RESOLUTION }}
           TRIGGER_SOURCE: ${{ inputs.trigger_source || 'scheduled' }}
         run: python weekly_report.py
 
