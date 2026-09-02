@@ -1,50 +1,33 @@
 """
-scanner.py — Phase 1 (FIX round 2: state-name false-positive + ambiguous
-"gold" keyword + new Trump-behavior exclusion filter).
+scanner.py — Phase 1 (FIX round 3: exclude structurally-gapped "hit $X"
+threshold markets from stocks/commodities/crypto).
 
 REPLACES your current scanner.py.
 
 WHAT CHANGED vs your last version
 ----------------------------------
-1. BUG FIX — "Georgia Tree" / candidate-name-collides-with-US-state-name:
-   `Secret Harbour State By-Election Winner` (a non-US, non-American race)
-   was being classified as a US election because one of the CANDIDATES is
-   named "Georgia Tree" — the word "Georgia" matched the US_STATE_NAMES
-   list, which was checked against the full candidate question text.
-   FIX: state names are now only checked against the EVENT-level context
-   (event_title + tags), never against an individual candidate's own
-   question. Real US races always carry the state name in the event title
-   itself (e.g. "Massachusetts Governor Republican Primary Winner"); a
-   candidate's personal name coincidentally matching a state should never
-   count. All other US-ness signals (u.s., electoral college, "democratic
-   nominee", senate/governor/congress, etc.) are unaffected and still
-   checked against the full text, since those are legitimate anywhere they
-   appear.
+Everything from round 2 (Georgia Tree state-name fix, ambiguous "gold"
+keyword fix, Trump-behavior exclusion) is UNCHANGED.
 
-2. BUG FIX — ambiguous "gold" keyword: `Trump-named things Trump will
-   mention` (containing the phrase "Trump Gold Card") was pulled into
-   `commodities` purely because the word "gold" appears in a product name,
-   the same class of bug as the already-fixed "Olympic gold medal" case,
-   just a different false-positive source (product name, not sport).
-   FIX: "gold" and "silver" (the only ambiguous, non-sport commodity
-   keywords) now additionally require a price-context word nearby (price,
-   xau, xag, ounce, $, "hit high/low") before they count as `commodities`.
-   Unambiguous commodity keywords (oil, crude, opec, natural gas, wti) are
-   untouched.
+NEW — excludes an entire family of markets: "What will X hit (by/in) ...?"
+price-extreme-threshold groups (Gold/Silver/Oil/Natural Gas/SPY/Bitcoin/
+Ethereum/volatility-index "hit $X" buckets). Reasoning: these bucket sets
+only cover thresholds meaningfully far from the current price -- there is
+no bucket for "stays roughly where it is," which is usually the single
+MOST likely outcome. Since position_logic.py always forces a Primary pick
+from whatever buckets exist, it ends up betting on a low-probability
+extreme by construction, which is a structural loss generator, not a
+modeling gap that more data could fix. Rather than let the bot signal on
+these at all, they're now dropped entirely at the categorization step
+(same DEFAULT_CATEGORY -> excluded-by-filter_to_roadmap_domains mechanism
+already used for sports/Trump-behavior markets).
 
-3. NEW — Trump personal-behavior markets are now excluded entirely (return
-   to DEFAULT_CATEGORY -> dropped by filter_to_roadmap_domains), per user
-   request: these are inherently unpredictable (whims of what someone says
-   or does on a given day) and no independent data source could ever model
-   them. Guard checked BEFORE any economic/political keyword, same pattern
-   as SPORTS_SIGNALS. Catches things like "Will Trump publicly insult X",
-   "Will Trump try to fire Powell", "What Trump-named things will Trump
-   mention", "What will Karoline Leavitt say...". Legitimate Trump POLICY
-   markets (elections, bills, tariffs, appointments announced through
-   normal channels) are NOT caught by this -- only speech-act / personal-
-   whim verbs (insult, mention, tweet, post, say, name, fire, call,
-   publicly). If you spot another Trump-behavior market slipping through,
-   just add its verb to TRUMP_BEHAVIOR_VERBS below.
+Detection: within the stocks/commodities/crypto categories specifically,
+if the question/event text contains the word "hit" (as in "hit $4,700",
+"hit HIGH", "hit by August 31"), the whole market is dropped. This does
+NOT touch fed/cpi/pce/gdp/employment/ecb/boc/boe -- those use a different,
+proper threshold/equality parser against real economic data, not a bucket
+family with structural coverage gaps.
 """
 
 from __future__ import annotations
@@ -102,15 +85,11 @@ US_STATE_NAMES: tuple[str, ...] = (
     "west virginia", "wisconsin", "wyoming",
 )
 
-# Generic STRONG signals -- legitimate anywhere they appear (candidate
-# question, event title, tags). State names are handled SEPARATELY (see
-# is_us_election) because they falsely match candidate personal names.
 US_STRONG_SIGNALS: tuple[str, ...] = (
     "united states", "u.s.", "usa", "electoral college", "midterm",
     "white house", "democratic nominee", "republican nominee",
     "house of representatives",
 )
-# WEAK signals: safe to trust on their own since nothing else uses them.
 US_WEAK_SIGNALS: tuple[str, ...] = ("senate", "governor", "congress")
 
 NON_US_COUNTRY_SIGNALS: tuple[str, ...] = (
@@ -131,22 +110,20 @@ SPORTS_SIGNALS: tuple[str, ...] = (
     "vs.", "vs ", "wins the game", "wins the match", "fight card",
 )
 
-# Ambiguous commodity keywords that also show up in unrelated product
-# names / slang ("Trump Gold Card", "gold medal" -- the latter is already
-# caught by SPORTS_SIGNALS). Require one of these price-context words
-# nearby before "gold"/"silver" count toward the commodities category.
 AMBIGUOUS_COMMODITY_KEYWORDS: frozenset[str] = frozenset({"gold", "silver"})
 PRICE_CONTEXT_SIGNALS: tuple[str, ...] = (
     "price", "xau", "xag", "ounce", "$", "hit high", "hit low", "per ounce",
 )
 
-# Trump / WH-press-secretary personal-behavior markets: inherently
-# unpredictable speech-acts, not modelable by any economic/political data
-# source. Excluded entirely regardless of what else the question mentions.
 TRUMP_BEHAVIOR_VERBS: tuple[str, ...] = (
     "insult", "mention", "tweet", "post", "say", "says", "said", "name",
     "named", "fire", "call", "publicly",
 )
+
+# NEW: categories where a bucket-set structural coverage gap makes any
+# signal a bad bet (see module docstring). "hit" is the tell-tale word in
+# these questions' phrasing ("hit $4,700", "hit HIGH", "hit by August 31").
+PRICE_HIT_GAP_CATEGORIES: frozenset[str] = frozenset({"stocks", "commodities", "crypto"})
 
 
 def word_in_text(keyword: str, text: str) -> bool:
@@ -173,13 +150,14 @@ def is_trump_behavior_market(haystack: str) -> bool:
     return any(word_in_text(verb, haystack) for verb in TRUMP_BEHAVIOR_VERBS)
 
 
+def is_price_hit_gap_market(haystack: str) -> bool:
+    """True for "What will X hit (by/in) ...?" style threshold-bucket
+    markets, which structurally never offer a bucket for the actual most
+    likely outcome (price stays near current level)."""
+    return word_in_text("hit", haystack)
+
+
 def is_us_election(haystack: str, context_haystack: str) -> bool:
-    """`haystack` = full text (question + tags + event_title), used for
-    every US-ness signal EXCEPT state names. `context_haystack` = event-level
-    text only (event_title + tags, never the individual candidate question)
-    -- this is the only text state names are allowed to match against, so a
-    candidate whose personal name happens to be a US state (e.g. "Georgia
-    Tree") can never single-handedly make a foreign race look American."""
     if any(word_in_text(sig, haystack) for sig in NON_US_COUNTRY_SIGNALS):
         return False
     if any(word_in_text(sig, haystack) for sig in US_STRONG_SIGNALS):
@@ -190,9 +168,6 @@ def is_us_election(haystack: str, context_haystack: str) -> bool:
 
 
 def categorize_market(question: str, tags: Iterable[str], event_title: str = "") -> str:
-    """`tags` may include event-level metadata; `event_title` is passed
-    separately so the US-state-name check can use event-only context (see
-    is_us_election) while every other signal still sees the full text."""
     haystack = " ".join([question or ""] + [t or "" for t in tags] + [event_title or ""]).lower()
     context_haystack = " ".join([event_title or ""] + [t or "" for t in tags]).lower()
 
@@ -210,6 +185,8 @@ def categorize_market(question: str, tags: Iterable[str], event_title: str = "")
                     continue
             if category == "elections" and not is_us_election(haystack, context_haystack):
                 continue
+            if category in PRICE_HIT_GAP_CATEGORIES and is_price_hit_gap_market(haystack):
+                return DEFAULT_CATEGORY
             return category
     return DEFAULT_CATEGORY
 
