@@ -1,34 +1,27 @@
 """
-weekly_report.py — Phase 7 (calibration) + ONE-TIME diagnostic mode.
+weekly_report.py — Phase 7 (calibration) + dedupe fix.
 
-THIS IS THE LATEST VERSION. If you already have a file named weekly_report.py
-or weekly_report-2.py from earlier in this chat, DELETE it from your repo and
-use THIS one instead -- it is NEWER and fixes a real bug the earlier one had.
+REPLACES your current weekly_report.py.
 
-WHAT THIS VERSION FIXES vs the one you just tested
-------------------------------------------------------
-Your previous file returned the label of the FIRST closed sub-market it
-found, whether that sub-market settled "Yes" OR "No". For multi-threshold
-markets (Gold/Oil/SPY/Bitcoin price buckets, where MANY thresholds settle
-"No" and only some settle "Yes"), this often grabbed a losing bucket (or
-just "No") by accident instead of searching specifically for the one that
-actually settled "Yes".
+WHAT CHANGED vs your last version
+------------------------------------
+Same resolution-checking logic as before (search all sub-markets for the
+one that settled "Yes", diagnostic DEBUG_RESOLUTION mode still available).
 
-THIS version specifically searches ALL sub-markets for the one that
-settled "Yes" (the real winner), and only falls back to "No" for genuinely
-standalone (single-market, no real grouping) events.
+NEW — deduplicates by market before resolving/reporting: main.py's daily
+scan appends a FRESH row to predictions_log.csv every single day a market
+is still within the resolve window (that's correct for the daily log, so
+you can see the signal evolve), but for the FINAL results report, the same
+real-world market showing up 2-3 times (once per day it was scanned) is
+just noise -- it's one prediction, not several. Dedup now keeps only the
+EARLIEST logged signal per market (group_key), i.e. the bot's original,
+longest-horizon call -- not a later, closer-to-resolution update -- since
+that's the more meaningful test of real predictive skill.
 
-HOW TO USE THE DIAGNOSTIC (do this once, then we fix it for real if needed)
--------------------------------------------------------------------------------
-1. In GitHub, add a new repository secret: DEBUG_RESOLUTION = true
-2. In .github/workflows/weekly_report.yml, inside the `env:` block of the
-   "Run report" step, add this line:
-       DEBUG_RESOLUTION: ${{ secrets.DEBUG_RESOLUTION }}
-3. Run "PolyBet Weekly Report" manually once (Actions tab -> Run workflow).
-4. Open that run's log, expand "Run report", find the block between
-   "===== RAW EVENT JSON (first slug) =====" and
-   "===== END RAW EVENT JSON =====", copy it, send it to me.
-5. Afterwards, set DEBUG_RESOLUTION back to "false" (or delete the secret).
+USAGE
+------
+    python weekly_report.py                # normal run, sends Telegram msg
+    python weekly_report.py --dry-run      # prints the report, doesn't send
 """
 
 from __future__ import annotations
@@ -55,7 +48,7 @@ GAMMA_EVENTS_ENDPOINT = "https://gamma-api.polymarket.com/events"
 REQUEST_TIMEOUT_SECONDS = 15
 RESOLVED_PRICE_THRESHOLD = 0.99  # a price >= this counts as "settled winner"
 DEBUG_RESOLUTION = os.getenv("DEBUG_RESOLUTION", "false").lower() == "true"
-_debug_already_printed = False  # module-level flag so we only dump ONE example per run
+_debug_already_printed = False
 
 PREDICTIONS_LOG_PATH = os.getenv("PREDICTIONS_LOG_PATH", "predictions_log.csv")
 PREDICTIONS_RESOLVED_PATH = os.getenv("PREDICTIONS_RESOLVED_PATH", "predictions_resolved.csv")
@@ -82,12 +75,34 @@ def load_predictions_log(path: str) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def load_resolved_cache(path: str) -> dict[tuple[str, str], dict]:
+def dedupe_by_market(log_rows: list[dict]) -> list[dict]:
+    """Keep only ONE row per real-world market (group_key) -- the EARLIEST
+    one by logged_at_utc, i.e. the bot's original longest-horizon call.
+    main.py logs the same still-open market again every day it's within
+    the resolve window; that's correct for the daily log, but here we only
+    want to grade each market once."""
+    earliest: dict[str, dict] = {}
+    for row in log_rows:
+        key = row.get("group_key", "")
+        if not key:
+            continue
+        existing = earliest.get(key)
+        if existing is None or (row.get("logged_at_utc", "") < existing.get("logged_at_utc", "")):
+            earliest[key] = row
+    return list(earliest.values())
+
+
+def load_resolved_cache(path: str) -> dict[str, dict]:
     if not os.path.isfile(path):
         return {}
     with open(path, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
-    return {(r["group_key"], r["logged_at_utc"]): r for r in rows}
+    cache: dict[str, dict] = {}
+    for r in rows:
+        key = r.get("group_key", "")
+        if key:
+            cache[key] = r  # later rows overwrite earlier duplicates -- fine, we only need one
+    return cache
 
 
 def slug_from_url(url: str) -> str | None:
@@ -147,7 +162,6 @@ def fetch_event_markets(slug: str, session: requests.Session) -> list[dict] | No
 
 
 def resolve_single_prediction(slug: str, primary_outcome: str, session: requests.Session) -> tuple[str | None, bool | None, bool]:
-    """Returns (resolved_outcome_label, is_correct, any_closed)."""
     sub_markets = fetch_event_markets(slug, session)
     if not sub_markets:
         return None, None, False
@@ -166,9 +180,6 @@ def resolve_single_prediction(slug: str, primary_outcome: str, session: requests
                 return settled, settled.lower() == primary_norm, True
         return None, None, True
 
-    # Search ALL sub-markets specifically for the one that settled "Yes" --
-    # do NOT stop at the first closed one regardless of its outcome, since
-    # most buckets in a multi-threshold group settle "No".
     for market in sub_markets:
         outcomes, prices = _parse_outcomes(market)
         for outcome, price in zip(outcomes, prices):
@@ -186,19 +197,19 @@ def resolve_single_prediction(slug: str, primary_outcome: str, session: requests
     return None, None, True
 
 
-def resolve_predictions(log_rows: list[dict], cache: dict[tuple[str, str], dict]) -> list[dict]:
+def resolve_predictions(log_rows: list[dict], cache: dict[str, dict]) -> list[dict]:
     session = requests.Session()
     resolved: list[dict] = []
 
     for row in log_rows:
-        key = (row.get("group_key", ""), row.get("logged_at_utc", ""))
+        key = row.get("group_key", "")
         cached = cache.get(key)
         if cached and cached.get("is_correct") in ("True", "False"):
             resolved.append(cached)
             continue
 
         base = {
-            "group_key": row.get("group_key", ""), "title": row.get("title", ""),
+            "group_key": key, "title": row.get("title", ""),
             "category": row.get("category", ""), "logged_at_utc": row.get("logged_at_utc", ""),
             "market_url": row.get("market_url", ""),
             "primary_outcome": row.get("primary_outcome", ""),
@@ -286,14 +297,17 @@ def run(dry_run: bool = False) -> str:
     load_dotenv()
     trigger_source = os.getenv("TRIGGER_SOURCE", "scheduled")
 
-    log_rows = load_predictions_log(PREDICTIONS_LOG_PATH)
-    if not log_rows:
+    raw_log_rows = load_predictions_log(PREDICTIONS_LOG_PATH)
+    if not raw_log_rows:
         message = "📈 گزارش PolyBet: هنوز هیچ سیگنالی در predictions_log.csv ثبت نشده."
         if not dry_run:
             send_message(message)
         else:
             print(message)
         return message
+
+    log_rows = dedupe_by_market(raw_log_rows)
+    logger.info("Deduped %d logged rows down to %d unique markets.", len(raw_log_rows), len(log_rows))
 
     cache = load_resolved_cache(PREDICTIONS_RESOLVED_PATH)
     resolved_rows = resolve_predictions(log_rows, cache)
