@@ -1,17 +1,16 @@
 # .github/workflows/daily_scan.yml
 # PLACEMENT: .github/workflows/daily_scan.yml (exact path)
 #
-# TIME CHOSEN: 17:12 UTC daily.
-# Reasoning (see chat for sources):
-#  - US BLS/BEA release major economic data at 8:30 AM ET every release day;
-#    FRED usually has same-day series updates a few hours later, so 17:12 UTC
-#    (~noon-1pm ET) gives a safe buffer before the bot reads FRED/BEA/etc.
-#  - 17:00 UTC is documented as Polymarket's single busiest trading hour,
-#    meaning market prices are most liquid/stable right when this bot reads
-#    them for position sizing.
-#  - :12 minutes (not :00) avoids GitHub Actions' top-of-hour congestion.
-# That's 20:42 Iran time, ~12:12-13:12 PM US Eastern depending on US DST.
-# To change: edit the two numbers in the cron line below (minute hour).
+# TIME: 17:12 UTC daily (~20:42 Iran time) -- see chat history for reasoning
+# (BLS/BEA release buffer + Polymarket peak liquidity hour + avoiding
+# GitHub Actions' top-of-hour congestion).
+#
+# NEW (resilience fix): the scan step now retries itself up to 3 times with
+# a 30-second pause between attempts before giving up and marking the run
+# as failed. This covers transient network hiccups talking to Polymarket's
+# API or any of the economic-data APIs in sources/ (a single timeout no
+# longer fails the whole day's run) -- exactly the kind of one-off "server
+# didn't answer" failure you saw on 2026-09-04.
 
 name: PolyBet Daily Scan
 
@@ -42,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run PolyBet scan
+      - name: Run PolyBet scan (with retry on transient failures)
         env:
           SEND_LIVE_SIGNALS: "true"
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -53,7 +52,24 @@ jobs:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
           BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
-        run: python main.py
+        run: |
+          set +e
+          for attempt in 1 2 3; do
+            echo "=== Attempt $attempt of 3 ==="
+            python main.py
+            status=$?
+            if [ $status -eq 0 ]; then
+              echo "Succeeded on attempt $attempt."
+              exit 0
+            fi
+            echo "Attempt $attempt failed (exit code $status)."
+            if [ $attempt -lt 3 ]; then
+              echo "Waiting 30 seconds before retrying..."
+              sleep 30
+            fi
+          done
+          echo "All 3 attempts failed."
+          exit 1
 
       - name: Commit updated dashboard + log
         run: |
