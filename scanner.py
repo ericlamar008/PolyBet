@@ -1,39 +1,28 @@
 """
-scanner.py — Phase 1 (FIX round 3: exclude structurally-gapped "hit $X"
-threshold markets from stocks/commodities/crypto).
+scanner.py — Phase 1 (round 4: retry on transient network failures).
 
 REPLACES your current scanner.py.
 
 WHAT CHANGED vs your last version
 ----------------------------------
-Everything from round 2 (Georgia Tree state-name fix, ambiguous "gold"
-keyword fix, Trump-behavior exclusion) is UNCHANGED.
+Everything from round 3 (Georgia Tree fix, ambiguous "gold" fix, Trump-
+behavior exclusion, "hit $X" structural-gap exclusion) is UNCHANGED.
 
-NEW — excludes an entire family of markets: "What will X hit (by/in) ...?"
-price-extreme-threshold groups (Gold/Silver/Oil/Natural Gas/SPY/Bitcoin/
-Ethereum/volatility-index "hit $X" buckets). Reasoning: these bucket sets
-only cover thresholds meaningfully far from the current price -- there is
-no bucket for "stays roughly where it is," which is usually the single
-MOST likely outcome. Since position_logic.py always forces a Primary pick
-from whatever buckets exist, it ends up betting on a low-probability
-extreme by construction, which is a structural loss generator, not a
-modeling gap that more data could fix. Rather than let the bot signal on
-these at all, they're now dropped entirely at the categorization step
-(same DEFAULT_CATEGORY -> excluded-by-filter_to_roadmap_domains mechanism
-already used for sports/Trump-behavior markets).
-
-Detection: within the stocks/commodities/crypto categories specifically,
-if the question/event text contains the word "hit" (as in "hit $4,700",
-"hit HIGH", "hit by August 31"), the whole market is dropped. This does
-NOT touch fed/cpi/pce/gdp/employment/ecb/boc/boe -- those use a different,
-proper threshold/equality parser against real economic data, not a bucket
-family with structural coverage gaps.
+NEW — resilience: fetch_raw_markets_page() now retries transient failures
+(connection errors, timeouts, and 5xx server errors) up to 3 times with a
+short backoff (2s, 4s, 8s) before giving up and raising. A single dropped
+connection or a slow moment on Polymarket's side (like what happened on
+2026-09-04) no longer needs a full workflow-level retry -- it's handled
+right where it happens. This is IN ADDITION TO the retry loop now wrapping
+the whole `python main.py` call in daily_scan.yml -- two layers, so a
+one-off network blip almost never fails the whole day's run.
 """
 
 from __future__ import annotations
 
 import logging
 import re
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable
@@ -48,6 +37,8 @@ DEFAULT_RESOLVE_WINDOW_DAYS = 7
 DEFAULT_PAGE_LIMIT = 100
 DEFAULT_MAX_PAGES = 300
 REQUEST_TIMEOUT_SECONDS = 15
+MAX_FETCH_RETRIES = 3
+RETRY_BACKOFF_BASE_SECONDS = 2
 
 CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "fed": ("fed", "federal reserve", "fomc", "powell"),
@@ -120,9 +111,6 @@ TRUMP_BEHAVIOR_VERBS: tuple[str, ...] = (
     "named", "fire", "call", "publicly",
 )
 
-# NEW: categories where a bucket-set structural coverage gap makes any
-# signal a bad bet (see module docstring). "hit" is the tell-tale word in
-# these questions' phrasing ("hit $4,700", "hit HIGH", "hit by August 31").
 PRICE_HIT_GAP_CATEGORIES: frozenset[str] = frozenset({"stocks", "commodities", "crypto"})
 
 
@@ -151,9 +139,6 @@ def is_trump_behavior_market(haystack: str) -> bool:
 
 
 def is_price_hit_gap_market(haystack: str) -> bool:
-    """True for "What will X hit (by/in) ...?" style threshold-bucket
-    markets, which structurally never offer a bucket for the actual most
-    likely outcome (price stays near current level)."""
     return word_in_text("hit", haystack)
 
 
@@ -346,6 +331,32 @@ def filter_to_roadmap_domains(markets: Iterable[ScannedMarket]) -> list[ScannedM
     return [m for m in markets if m.category in ROADMAP_DOMAINS]
 
 
+def _request_with_retry(sess: requests.Session, url: str, params: dict[str, Any]) -> requests.Response:
+    """GET with retry on transient failures (connection errors, timeouts,
+    and 5xx server errors). Does NOT retry on 4xx client errors (like the
+    422 pagination-depth signal main pagination logic already handles) --
+    those are immediate, retrying won't help. Backoff: 2s, 4s, 8s."""
+    last_exc: Exception | None = None
+    for attempt in range(1, MAX_FETCH_RETRIES + 1):
+        try:
+            resp = sess.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
+            if resp.status_code >= 500:
+                raise requests.exceptions.HTTPError(f"Server error {resp.status_code}", response=resp)
+            return resp
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.HTTPError) as exc:
+            last_exc = exc
+            if attempt == MAX_FETCH_RETRIES:
+                break
+            wait_seconds = RETRY_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1))
+            logger.warning(
+                "Request to %s failed (attempt %d/%d): %s -- retrying in %ds",
+                url, attempt, MAX_FETCH_RETRIES, exc, wait_seconds,
+            )
+            time.sleep(wait_seconds)
+    assert last_exc is not None
+    raise last_exc
+
+
 def fetch_raw_markets_page(
     limit: int = DEFAULT_PAGE_LIMIT,
     offset: int = 0,
@@ -366,7 +377,7 @@ def fetch_raw_markets_page(
         params["end_date_min"] = end_date_min
     if end_date_max:
         params["end_date_max"] = end_date_max
-    resp = sess.get(MARKETS_ENDPOINT, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
+    resp = _request_with_retry(sess, MARKETS_ENDPOINT, params)
     resp.raise_for_status()
     data = resp.json()
     if isinstance(data, dict) and "data" in data:
