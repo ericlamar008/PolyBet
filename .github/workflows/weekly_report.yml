@@ -1,16 +1,14 @@
 # .github/workflows/weekly_report.yml
-# PLACEMENT: .github/workflows/weekly_report.yml
+# PLACEMENT: .github/workflows/weekly_report.yml (exact path)
 #
-# Runs on TWO kinds of triggers:
-#   1. schedule (Sunday 18:00 UTC) -- the regular weekly report.
-#   2. workflow_dispatch with input "trigger_source" -- manual runs (from the
-#      Actions tab, or from the Telegram button via the Cloudflare Worker).
-#
-# TEMPORARY: DEBUG_RESOLUTION is wired in below so we can dump the raw
-# Polymarket API JSON for one event into the run log, to fix the
-# bucket-name-vs-Yes/No issue for good. Once that's fixed, you can safely
-# set the DEBUG_RESOLUTION secret to "false" (or delete it) -- this line can
-# stay in the file either way, since an unset/false secret just does nothing.
+# UPGRADES & FIXES (PolyBet v2.0):
+# 1. Unified concurrency group (`polybet-repo-write`) shared with
+#    `daily_scan.yml` to prevent git push conflicts.
+# 2. Added `rebuild_cache` workflow_dispatch input (and automatic self-healing
+#    in `weekly_report.py`) to repair legacy rows in `predictions_resolved.csv`
+#    where single binary markets had `primary_outcome == title` and were
+#    falsely marked `is_correct = False`.
+# 3. Added `git pull --rebase --autostash origin HEAD` before `git push`.
 
 name: PolyBet Weekly Report
 
@@ -24,12 +22,17 @@ on:
         required: false
         default: "scheduled"
         type: string
+      rebuild_cache:
+        description: "Re-evaluate all cached resolutions from scratch"
+        required: false
+        default: "false"
+        type: string
 
 permissions:
   contents: write
 
 concurrency:
-  group: polybet-weekly-report
+  group: polybet-repo-write
   cancel-in-progress: false
 
 jobs:
@@ -43,17 +46,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run report
+      - name: Run report and self-heal resolution cache
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
           DEBUG_RESOLUTION: ${{ secrets.DEBUG_RESOLUTION }}
           TRIGGER_SOURCE: ${{ inputs.trigger_source || 'scheduled' }}
+          REBUILD_RESOLVED_CACHE: ${{ inputs.rebuild_cache || 'false' }}
         run: python weekly_report.py
 
       - name: Commit updated resolution cache + results dashboard
@@ -61,5 +66,10 @@ jobs:
           git config user.name "polybet-bot"
           git config user.email "polybet-bot@users.noreply.github.com"
           git add predictions_resolved.csv docs/results.html
-          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Report run ($TRIGGER_SOURCE): $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Report run ($TRIGGER_SOURCE): $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git pull --rebase --autostash origin HEAD
+            git push
+          fi

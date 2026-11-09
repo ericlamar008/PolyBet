@@ -1,0 +1,80 @@
+# .github/workflows/daily_scan.yml
+# PLACEMENT: .github/workflows/daily_scan.yml (exact path)
+#
+# TIME: 17:12 UTC daily (~20:42 Iran time) -- see chat history for reasoning
+# (BLS/BEA release buffer + Polymarket peak liquidity hour + avoiding
+# GitHub Actions' top-of-hour congestion).
+#
+# NEW (resilience fix): the scan step now retries itself up to 3 times with
+# a 30-second pause between attempts before giving up and marking the run
+# as failed. This covers transient network hiccups talking to Polymarket's
+# API or any of the economic-data APIs in sources/ (a single timeout no
+# longer fails the whole day's run) -- exactly the kind of one-off "server
+# didn't answer" failure you saw on 2026-09-04.
+
+name: PolyBet Daily Scan
+
+on:
+  schedule:
+    - cron: "12 17 * * *"   # 17:12 UTC = ~20:42 Iran time
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polybet-daily-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run PolyBet scan (with retry on transient failures)
+        env:
+          SEND_LIVE_SIGNALS: "true"
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
+        run: |
+          set +e
+          for attempt in 1 2 3; do
+            echo "=== Attempt $attempt of 3 ==="
+            python main.py
+            status=$?
+            if [ $status -eq 0 ]; then
+              echo "Succeeded on attempt $attempt."
+              exit 0
+            fi
+            echo "Attempt $attempt failed (exit code $status)."
+            if [ $attempt -lt 3 ]; then
+              echo "Waiting 30 seconds before retrying..."
+              sleep 30
+            fi
+          done
+          echo "All 3 attempts failed."
+          exit 1
+
+      - name: Commit updated dashboard + log
+        run: |
+          git config user.name "polybet-bot"
+          git config user.email "polybet-bot@users.noreply.github.com"
+          git add docs/index.html predictions_log.csv
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Daily scan: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push

@@ -1,27 +1,24 @@
 """
-weekly_report.py — Phase 7 (calibration) + dedupe fix.
+weekly_report.py — PolyBet v2.0 Resolution & Self-Healing Cache Auditor.
 
 REPLACES your current weekly_report.py.
 
-WHAT CHANGED vs your last version
-------------------------------------
-Same resolution-checking logic as before (search all sub-markets for the
-one that settled "Yes", diagnostic DEBUG_RESOLUTION mode still available).
-
-NEW — deduplicates by market before resolving/reporting: main.py's daily
-scan appends a FRESH row to predictions_log.csv every single day a market
-is still within the resolve window (that's correct for the daily log, so
-you can see the signal evolve), but for the FINAL results report, the same
-real-world market showing up 2-3 times (once per day it was scanned) is
-just noise -- it's one prediction, not several. Dedup now keeps only the
-EARLIEST logged signal per market (group_key), i.e. the bot's original,
-longest-horizon call -- not a later, closer-to-resolution update -- since
-that's the more meaningful test of real predictive skill.
-
-USAGE
-------
-    python weekly_report.py                # normal run, sends Telegram msg
-    python weekly_report.py --dry-run      # prints the report, doesn't send
+KEY FIXES IN THIS VERSION:
+1. FIX BUG #1 (Self-Healing for Single-Market Binary Events):
+   Previously, single binary markets (like all 35 stock earnings markets: PANW,
+   AVGO, SNOW, LULU, etc.) had `primary_outcome` logged as the full question
+   title (`"Will Broadcom (AVGO) beat quarterly earnings?"`) while Polymarket
+   resolved them as `"Yes"` or `"No"`. `resolve_single_prediction` compared
+   `"yes" == "will broadcom..."` -> `False`!
+   Worse, `resolve_predictions` cached those false negatives forever in
+   `predictions_resolved.csv`!
+   Now `resolve_predictions` automatically detects and repairs any cached row
+   where `primary_outcome.lower() == title.lower()` and `resolved_outcome in ("Yes", "No")`!
+2. FIX BUG #7 (Cumulative "By Date" Multi-Market Resolution):
+   In markets like "US reissues Iran oil sales sanction relief by...?", if the
+   specific sub-market matching `primary_outcome` (e.g. "August 31") has closed
+   and settled `"No"`, it immediately resolves as `False` instead of hanging
+   forever waiting for some future date to settle `"Yes"`.
 """
 
 from __future__ import annotations
@@ -46,9 +43,9 @@ logger = logging.getLogger(__name__)
 
 GAMMA_EVENTS_ENDPOINT = "https://gamma-api.polymarket.com/events"
 REQUEST_TIMEOUT_SECONDS = 15
-RESOLVED_PRICE_THRESHOLD = 0.99  # a price >= this counts as "settled winner"
+RESOLVED_PRICE_THRESHOLD = 0.99
 DEBUG_RESOLUTION = os.getenv("DEBUG_RESOLUTION", "false").lower() == "true"
-_debug_already_printed = False
+REBUILD_RESOLVED_CACHE = os.getenv("REBUILD_RESOLVED_CACHE", "false").lower() == "true"
 
 PREDICTIONS_LOG_PATH = os.getenv("PREDICTIONS_LOG_PATH", "predictions_log.csv")
 PREDICTIONS_RESOLVED_PATH = os.getenv("PREDICTIONS_RESOLVED_PATH", "predictions_resolved.csv")
@@ -62,8 +59,8 @@ RESOLVED_FIELDS = [
 ]
 
 REPORT_TITLES = {
-    "scheduled": "📈 *گزارش هفتگی PolyBet*",
-    "telegram_button": "🔘 *نتایج نهایی PolyBet (به‌درخواست شما)*",
+    "scheduled": "📈 *گزارش هفتگی PolyBet v2.0*",
+    "telegram_button": "🔘 *نتایج نهایی PolyBet v2.0 (به‌درخواست شما)*",
 }
 
 
@@ -76,11 +73,6 @@ def load_predictions_log(path: str) -> list[dict]:
 
 
 def dedupe_by_market(log_rows: list[dict]) -> list[dict]:
-    """Keep only ONE row per real-world market (group_key) -- the EARLIEST
-    one by logged_at_utc, i.e. the bot's original longest-horizon call.
-    main.py logs the same still-open market again every day it's within
-    the resolve window; that's correct for the daily log, but here we only
-    want to grade each market once."""
     earliest: dict[str, dict] = {}
     for row in log_rows:
         key = row.get("group_key", "")
@@ -92,8 +84,20 @@ def dedupe_by_market(log_rows: list[dict]) -> list[dict]:
     return list(earliest.values())
 
 
+def _repair_binary_cache_row(row: dict) -> dict:
+    """Self-heal cached rows in predictions_resolved.csv affected by Bug #1."""
+    title = (row.get("title") or "").strip()
+    primary = (row.get("primary_outcome") or "").strip()
+    resolved = (row.get("resolved_outcome") or "").strip()
+    if title and primary.lower() == title.lower():
+        row["primary_outcome"] = "Yes"
+        if resolved.lower() in ("yes", "no"):
+            row["is_correct"] = str(resolved.lower() == "yes")
+    return row
+
+
 def load_resolved_cache(path: str) -> dict[str, dict]:
-    if not os.path.isfile(path):
+    if REBUILD_RESOLVED_CACHE or not os.path.isfile(path):
         return {}
     with open(path, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
@@ -101,7 +105,7 @@ def load_resolved_cache(path: str) -> dict[str, dict]:
     for r in rows:
         key = r.get("group_key", "")
         if key:
-            cache[key] = r  # later rows overwrite earlier duplicates -- fine, we only need one
+            cache[key] = _repair_binary_cache_row(r)
     return cache
 
 
@@ -139,7 +143,6 @@ def _parse_outcomes(market: dict) -> tuple[list[str], list[float]]:
 
 
 def fetch_event_markets(slug: str, session: requests.Session) -> list[dict] | None:
-    global _debug_already_printed
     try:
         resp = session.get(GAMMA_EVENTS_ENDPOINT, params={"slug": slug}, timeout=REQUEST_TIMEOUT_SECONDS)
         resp.raise_for_status()
@@ -148,20 +151,15 @@ def fetch_event_markets(slug: str, session: requests.Session) -> list[dict] | No
         logger.warning("Could not fetch event for slug=%s: %s", slug, exc)
         return None
 
-    if DEBUG_RESOLUTION and not _debug_already_printed:
-        _debug_already_printed = True
-        logger.info("===== RAW EVENT JSON (first slug) =====")
-        logger.info("slug=%s", slug)
-        logger.info(json.dumps(data, indent=2)[:6000])
-        logger.info("===== END RAW EVENT JSON =====")
-
     events = data if isinstance(data, list) else data.get("data", [])
     if not events:
         return None
     return events[0].get("markets", [])
 
 
-def resolve_single_prediction(slug: str, primary_outcome: str, session: requests.Session) -> tuple[str | None, bool | None, bool]:
+def resolve_single_prediction(
+    slug: str, primary_outcome: str, title: str, session: requests.Session
+) -> tuple[str | None, bool | None, bool]:
     sub_markets = fetch_event_markets(slug, session)
     if not sub_markets:
         return None, None, False
@@ -171,28 +169,36 @@ def resolve_single_prediction(slug: str, primary_outcome: str, session: requests
         return None, None, False
 
     primary_norm = (primary_outcome or "").strip().lower()
+    title_norm = (title or "").strip().lower()
 
+    # FIX BUG #1: Single binary market
     if len(sub_markets) == 1:
+        effective_primary = "yes" if primary_norm == title_norm else primary_norm
         outcomes, prices = _parse_outcomes(sub_markets[0])
         for outcome, price in zip(outcomes, prices):
             if price >= RESOLVED_PRICE_THRESHOLD:
                 settled = outcome.strip()
-                return settled, settled.lower() == primary_norm, True
+                return settled, settled.lower() == effective_primary, True
         return None, None, True
 
+    # Multi-candidate / Multi-date event
     for market in sub_markets:
         outcomes, prices = _parse_outcomes(market)
+        label = (market.get("groupItemTitle") or market.get("question") or "").strip()
         for outcome, price in zip(outcomes, prices):
             if price >= RESOLVED_PRICE_THRESHOLD and outcome.strip().lower() == "yes":
-                label = (market.get("groupItemTitle") or "").strip()
                 if not label:
-                    question = (market.get("question") or "").lower()
-                    if primary_norm and primary_norm in question:
-                        label = primary_outcome.strip()
-                    else:
-                        label = (market.get("question") or "Yes").strip()
+                    label = primary_outcome.strip()
                 is_correct = label.strip().lower() == primary_norm
                 return label, is_correct, True
+            # FIX BUG #7: If the specific date sub-market we bet on settled "No", resolve as False!
+            if (
+                market.get("closed")
+                and price >= RESOLVED_PRICE_THRESHOLD
+                and outcome.strip().lower() == "no"
+                and label.strip().lower() == primary_norm
+            ):
+                return f"Not {label}", False, True
 
     return None, None, True
 
@@ -205,14 +211,20 @@ def resolve_predictions(log_rows: list[dict], cache: dict[str, dict]) -> list[di
         key = row.get("group_key", "")
         cached = cache.get(key)
         if cached and cached.get("is_correct") in ("True", "False"):
-            resolved.append(cached)
+            resolved.append(_repair_binary_cache_row(cached))
             continue
 
+        title = row.get("title", "")
+        raw_primary = row.get("primary_outcome", "")
+        clean_primary = "Yes" if raw_primary.strip().lower() == title.strip().lower() else raw_primary
+
         base = {
-            "group_key": key, "title": row.get("title", ""),
-            "category": row.get("category", ""), "logged_at_utc": row.get("logged_at_utc", ""),
+            "group_key": key,
+            "title": title,
+            "category": row.get("category", ""),
+            "logged_at_utc": row.get("logged_at_utc", ""),
             "market_url": row.get("market_url", ""),
-            "primary_outcome": row.get("primary_outcome", ""),
+            "primary_outcome": clean_primary,
             "primary_size_pct": row.get("primary_size_pct", ""),
             "primary_market_price": row.get("primary_market_price", ""),
         }
@@ -222,7 +234,7 @@ def resolve_predictions(log_rows: list[dict], cache: dict[str, dict]) -> list[di
             resolved.append({**base, "resolved_outcome": "", "is_correct": "", "checked_at_utc": datetime.now(timezone.utc).isoformat()})
             continue
 
-        winner, is_correct, _any_closed = resolve_single_prediction(slug, row.get("primary_outcome", ""), session)
+        winner, is_correct, _any_closed = resolve_single_prediction(slug, clean_primary, title, session)
         resolved.append({
             **base,
             "resolved_outcome": winner or "",
@@ -241,6 +253,13 @@ def write_resolved_cache(path: str, rows: list[dict]) -> None:
             writer.writerow({k: row.get(k, "") for k in RESOLVED_FIELDS})
 
 
+def _parse_ts(value: str) -> datetime | None:
+    try:
+        return datetime.fromisoformat(value)
+    except (ValueError, TypeError):
+        return None
+
+
 def build_weekly_stats(resolved_rows: list[dict], since: datetime) -> dict:
     this_week = [r for r in resolved_rows if _parse_ts(r["logged_at_utc"]) and _parse_ts(r["logged_at_utc"]) >= since]
     total = len(this_week)
@@ -255,17 +274,13 @@ def build_weekly_stats(resolved_rows: list[dict], since: datetime) -> dict:
             by_category[r["category"]][0] += 1
 
     return {
-        "total": total, "decided": len(decided), "correct": len(correct), "pending": pending,
+        "total": total,
+        "decided": len(decided),
+        "correct": len(correct),
+        "pending": pending,
         "success_rate": (len(correct) / len(decided) * 100.0) if decided else None,
         "by_category": dict(by_category),
     }
-
-
-def _parse_ts(value: str) -> datetime | None:
-    try:
-        return datetime.fromisoformat(value)
-    except (ValueError, TypeError):
-        return None
 
 
 def format_weekly_report(stats: dict, trigger_source: str = "scheduled", results_url: str = "") -> str:
@@ -307,6 +322,7 @@ def run(dry_run: bool = False) -> str:
         return message
 
     log_rows = dedupe_by_market(raw_log_rows)
+    log_by_key = {r.get("group_key", ""): r for r in log_rows if r.get("group_key")}
     logger.info("Deduped %d logged rows down to %d unique markets.", len(raw_log_rows), len(log_rows))
 
     cache = load_resolved_cache(PREDICTIONS_RESOLVED_PATH)
@@ -315,7 +331,7 @@ def run(dry_run: bool = False) -> str:
 
     try:
         os.makedirs(os.path.dirname(RESULTS_HTML_PATH) or ".", exist_ok=True)
-        write_results_html(RESULTS_HTML_PATH, resolved_rows)
+        write_results_html(RESULTS_HTML_PATH, resolved_rows, log_by_key=log_by_key)
         logger.info("Wrote results dashboard to %s", RESULTS_HTML_PATH)
     except OSError as exc:
         logger.warning("Failed to write results dashboard: %s", exc)

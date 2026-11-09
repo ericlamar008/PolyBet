@@ -1,26 +1,7 @@
-"""sources/aggregator.py — FIX: added missing "pce" domain to
-DOMAIN_SOURCES.
+"""
+sources/aggregator.py — PolyBet v2.0 Multi-Source Signal Aggregator.
 
-Root cause of Core PCE markets still showing "no independent sources"
-even after scanner.py and fred.py were fixed: DOMAIN_SOURCES is a
-manually-curated dict, and it never had a "pce" key at all — so
-collect_estimates() looked up fns = DOMAIN_SOURCES.get("pce", []),
-got an EMPTY list, and fred.get_estimate was never called regardless of
-whether fred.py supported the domain.
-
-"central_banks_other" (Bank of Korea, BoJ, RBA, RBNZ, SNB, PBOC, ...)
-is deliberately NOT added here — there is currently no free/reliable
-data source wired up for it (see prior conversation: central-bank
-decision markets need forward-looking market/survey data, e.g. swaps
-pricing or a Reuters poll, not just the current policy rate level).
-Leaving it out of DOMAIN_SOURCES means collect_estimates() returns an
-empty list for it -- correct behavior -- and it still gets scanned,
-shown, and labeled with the category-aware warning instead of being
-silently dropped by scanner.py.
-
-IMF removed (endpoint proved dead/unreliable via live testing — 502
-then SSL EOF errors on two separate attempts). Eurostat added as its
-short-term replacement for EU/Eurozone CPI/GDP.
+REPLACES your current sources/aggregator.py.
 """
 
 from __future__ import annotations
@@ -38,7 +19,7 @@ GetEstimateFn = Callable[[str, str], "SourceEstimate | None"]
 DOMAIN_SOURCES: dict[str, list[GetEstimateFn]] = {
     "fed": [fred.get_estimate],
     "cpi": [fred.get_estimate, bls.get_estimate, eurostat.get_estimate, worldbank.get_estimate],
-    "pce": [fred.get_estimate],
+    "pce": [fred.get_estimate, bea.get_estimate],
     "employment": [fred.get_estimate, bls.get_estimate, worldbank.get_estimate],
     "gdp": [fred.get_estimate, bea.get_estimate, eurostat.get_estimate, worldbank.get_estimate],
     "ecb": [ecb.get_estimate],
@@ -66,7 +47,7 @@ def collect_estimates(question: str, domain: str) -> list[SourceEstimate]:
 
 
 class MarketSignal:
-    """Aggregated multi-source signal for one market, ready for Phase 3."""
+    """Aggregated multi-source signal for one market, with Bayesian consensus."""
 
     def __init__(self, estimates: list[SourceEstimate]):
         self.estimates = estimates
@@ -75,7 +56,7 @@ class MarketSignal:
         self.num_sources = len(estimates)
 
     def __repr__(self) -> str:
-        return f"MarketSignal(n={self.num_sources}, consensus={self.consensus_score:.0f}, mean_p={self.mean_probability:.2f})"
+        return f"MarketSignal(n={self.num_sources}, consensus={self.consensus_score:.1f}, mean_p={self.mean_probability:.2f})"
 
 
 def build_signal(question: str, domain: str) -> MarketSignal:

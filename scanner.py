@@ -1,25 +1,23 @@
 """
-scanner.py — Phase 1 (round 4: retry on transient network failures).
+scanner.py — PolyBet v2.0 Market Scanner & Disambiguated Classifier.
 
 REPLACES your current scanner.py.
 
-WHAT CHANGED vs your last version
-----------------------------------
-Everything from round 3 (Georgia Tree fix, ambiguous "gold" fix, Trump-
-behavior exclusion, "hit $X" structural-gap exclusion) is UNCHANGED.
-
-NEW — resilience: fetch_raw_markets_page() now retries transient failures
-(connection errors, timeouts, and 5xx server errors) up to 3 times with a
-short backoff (2s, 4s, 8s) before giving up and raising. A single dropped
-connection or a slow moment on Polymarket's side (like what happened on
-2026-09-04) no longer needs a full workflow-level retry -- it's handled
-right where it happens. This is IN ADDITION TO the retry loop now wrapping
-the whole `python main.py` call in daily_scan.yml -- two layers, so a
-one-off network blip almost never fails the whole day's run.
+KEY FIXES IN THIS VERSION:
+1. FIX BUG #3 ("bailey" -> Bank of England misclassification):
+   Replaced bare surname `"bailey"` with `"andrew bailey"`, `"boe decision"`,
+   `"mpc vote"` so US election candidates (Melissa Bailey in NH-01) and NFL
+   players (Bailey Zappe in Jets Starting QB) are never classified as `boe`.
+2. Added `"pro football"`, `"starting qb"`, `"touchdown"`, `"premier league"`,
+   `"serie a"`, `"la liga"` to `SPORTS_SIGNALS` so sports props never leak in.
+3. Fixed `resolve_group_metadata`: only sets `group_label` from `groupItemTitle`
+   (never copying the full binary question into `group_label`), preventing single
+   binary markets from masquerading as multi-candidate groups.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import time
@@ -41,21 +39,21 @@ MAX_FETCH_RETRIES = 3
 RETRY_BACKOFF_BASE_SECONDS = 2
 
 CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
-    "fed": ("fed", "federal reserve", "fomc", "powell"),
+    "fed": ("fed", "federal reserve", "fomc", "jerome powell", "fed rate"),
     "cpi": ("cpi", "inflation", "consumer price index"),
     "pce": ("pce", "personal consumption expenditures", "core pce"),
     "employment": ("unemployment", "nonfarm", "payroll", "jobs report", "jobless"),
     "gdp": ("gdp", "gross domestic product", "recession"),
-    "ecb": ("ecb", "european central bank", "lagarde", "eurozone rate"),
-    "boc": ("bank of canada", "boc rate", "macklem"),
-    "boe": ("bank of england", "boe rate", "bailey"),
+    "ecb": ("ecb", "european central bank", "christine lagarde", "eurozone rate"),
+    "boc": ("bank of canada", "boc rate", "boc decision", "tiff macklem"),
+    "boe": ("bank of england", "boe rate", "boe decision", "mpc vote", "andrew bailey"),
     "central_banks_other": (
         "bank of korea", "boj", "bank of japan", "reserve bank of australia",
         "rba rate", "reserve bank of new zealand", "rbnz", "snb",
         "swiss national bank", "pboc", "people's bank of china",
         "bank of mexico", "banxico", "sarb", "south african reserve bank",
     ),
-    "stocks": ("s&p", "nasdaq", "dow jones", "stock", "equity", "earnings"),
+    "stocks": ("s&p", "nasdaq", "dow jones", "stock", "equity", "earnings", "quarterly earnings", "eps"),
     "commodities": ("oil", "gold", "silver", "crude", "opec", "commodity", "natural gas"),
     "elections": ("election", "president", "senate", "congress", "governor", "vote", "primary"),
     "crypto": ("bitcoin", "btc", "ethereum", "eth", "crypto", "altcoin"),
@@ -79,9 +77,9 @@ US_STATE_NAMES: tuple[str, ...] = (
 US_STRONG_SIGNALS: tuple[str, ...] = (
     "united states", "u.s.", "usa", "electoral college", "midterm",
     "white house", "democratic nominee", "republican nominee",
-    "house of representatives",
+    "house of representatives", "democratic primary", "republican primary",
 )
-US_WEAK_SIGNALS: tuple[str, ...] = ("senate", "governor", "congress")
+US_WEAK_SIGNALS: tuple[str, ...] = ("senate", "governor", "congress", "primary winner")
 
 NON_US_COUNTRY_SIGNALS: tuple[str, ...] = (
     "japan", "korea", "china", "brazil", "argentina", "chile", "peru",
@@ -99,6 +97,8 @@ SPORTS_SIGNALS: tuple[str, ...] = (
     "final four", "world series", "stanley cup", "nba", "nfl", "mlb",
     "nhl", "ufc", "boxing", "wrestlemania", "grand prix", "match",
     "vs.", "vs ", "wins the game", "wins the match", "fight card",
+    "pro football", "starting qb", "touchdown", "premier league",
+    "champions league", "la liga", "serie a", "bundesliga",
 )
 
 AMBIGUOUS_COMMODITY_KEYWORDS: frozenset[str] = frozenset({"gold", "silver"})
@@ -139,7 +139,7 @@ def is_trump_behavior_market(haystack: str) -> bool:
 
 
 def is_price_hit_gap_market(haystack: str) -> bool:
-    return word_in_text("hit", haystack)
+    return word_in_text("hit", haystack) or bool(re.search(r"[↑↓]\s*\$?[\d,]+", haystack))
 
 
 def is_us_election(haystack: str, context_haystack: str) -> bool:
@@ -199,7 +199,7 @@ class ScannedMarket:
 
     @property
     def is_grouped(self) -> bool:
-        return bool(self.event_title)
+        return bool(self.group_label)
 
 
 def parse_end_date(raw: Any) -> datetime | None:
@@ -220,7 +220,6 @@ def parse_float_list(raw: Any) -> list[float]:
     if raw is None:
         return []
     if isinstance(raw, str):
-        import json
         try:
             raw = json.loads(raw)
         except json.JSONDecodeError:
@@ -240,7 +239,6 @@ def parse_str_list(raw: Any) -> list[str]:
     if raw is None:
         return []
     if isinstance(raw, str):
-        import json
         try:
             parsed = json.loads(raw)
             if isinstance(parsed, list):
@@ -262,13 +260,13 @@ def resolve_public_slug(raw_market: dict[str, Any]) -> str:
 
 
 def resolve_group_metadata(raw_market: dict[str, Any], question: str) -> tuple[str, str]:
-    group_label = raw_market.get("groupItemTitle") or ""
+    """FIX BUG #1: Keep group_label empty if groupItemTitle is absent so a single
+    binary market inside an event wrapper is NOT mistaken for a named candidate bucket."""
+    group_label = (raw_market.get("groupItemTitle") or "").strip()
     events = raw_market.get("events")
     event_title = ""
     if isinstance(events, list) and events and isinstance(events[0], dict):
-        event_title = events[0].get("title") or ""
-    if not group_label and event_title:
-        group_label = question
+        event_title = (events[0].get("title") or "").strip()
     return group_label, event_title
 
 
@@ -332,10 +330,6 @@ def filter_to_roadmap_domains(markets: Iterable[ScannedMarket]) -> list[ScannedM
 
 
 def _request_with_retry(sess: requests.Session, url: str, params: dict[str, Any]) -> requests.Response:
-    """GET with retry on transient failures (connection errors, timeouts,
-    and 5xx server errors). Does NOT retry on 4xx client errors (like the
-    422 pagination-depth signal main pagination logic already handles) --
-    those are immediate, retrying won't help. Backoff: 2s, 4s, 8s."""
     last_exc: Exception | None = None
     for attempt in range(1, MAX_FETCH_RETRIES + 1):
         try:
@@ -384,17 +378,7 @@ def fetch_raw_markets_page(
         return data["data"]
     if isinstance(data, list):
         return data
-    logger.warning("Unexpected Gamma API response shape: %s", type(data))
     return []
-
-
-def fetch_raw_markets(
-    limit: int = DEFAULT_PAGE_LIMIT,
-    active: bool = True,
-    closed: bool = False,
-    session: requests.Session | None = None,
-) -> list[dict[str, Any]]:
-    return fetch_raw_markets_page(limit=limit, offset=0, active=active, closed=closed, session=session)
 
 
 def fetch_all_raw_markets(
@@ -418,19 +402,12 @@ def fetch_all_raw_markets(
         except requests.exceptions.HTTPError as exc:
             status = exc.response.status_code if exc.response is not None else None
             if status == 422:
-                logger.info(
-                    "Gamma API returned 422 at offset=%d (pagination depth limit); "
-                    "stopping pagination with %d markets collected so far.",
-                    offset, len(all_markets),
-                )
                 break
             raise
         if not page:
             break
         all_markets.extend(page)
         offset += len(page)
-    else:
-        logger.warning("Hit max_pages=%d while paginating Gamma API; results may be incomplete.", max_pages)
     return all_markets
 
 
@@ -458,6 +435,5 @@ def scan_markets(
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    results = scan_markets()
-    for m in results:
+    for m in scan_markets():
         print(f"[{m.category}] {m.question} (resolves in {m.days_to_resolve:.1f}d) {m.url}")

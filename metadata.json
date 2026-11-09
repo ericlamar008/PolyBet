@@ -1,0 +1,6 @@
+{
+  "name": "PolyBet Quant Terminal",
+  "description": "Institutional-grade Polymarket quantitative signal aggregator, multi-outcome Dutch-Book & fractional Kelly position sizing engine, historical backtest auditor, and AI research terminal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

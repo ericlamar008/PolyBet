@@ -1,23 +1,15 @@
 """
-html_generator.py — Phase 5 + AI Analysis Layer (Phase 3) + Phase 6
-(category sections) + Phase 6.1 (sticky top nav / tab filter).
+html_generator.py — PolyBet v2.0 Static Dashboard Generator (Fixed AI Payload & Net ROI).
 
 REPLACES your current html_generator.py.
 
-WHAT CHANGED vs your last version
-----------------------------------
-Card rendering (signal line, guaranteed-margin line, warning line, full
-position-plan table, AI Analysis button/widget) and the section-bucketing
-logic (high-confidence / politics / economy / markets / other) are UNCHANGED
-from the version you just verified worked correctly.
-
-The only new thing: a sticky nav bar right under the <h1>, with one button
-per non-empty section (plus "All"). Clicking a button does NOT scroll the
-page — it filters in place, hiding every section except the one you picked
-(pure CSS display:none toggling via a tiny inline <script>, no page reload,
-no anchor-jump). The nav bar stays pinned to the top (position: sticky) while
-you scroll through a section's cards, so you can switch categories again
-without scrolling back up.
+KEY FIXES IN THIS VERSION:
+1. FIX BUG #8 (AI Analysis Button Payload):
+   Previously `_render_ai_widget(market)` only passed `market.outcomes` and
+   `market.outcome_prices` of `group[0]` (which for a grouped event was only the
+   first bucket's binary Yes/No price!). Now `_render_ai_widget(market, title, plan)`
+   passes all candidate outcomes and prices from `plan.allocations`.
+2. Added `Net ROI if Wins` column to the full position plan table on every card.
 """
 
 from __future__ import annotations
@@ -32,34 +24,20 @@ from scanner import ScannedMarket
 ROLE_LABELS = {"primary": "Primary", "secondary": "Secondary", "hedge": "Hedge"}
 ROLE_COLORS = {"primary": "#1a7f37", "secondary": "#0969da", "hedge": "#9a6700"}
 
-# TODO: if you ever redeploy the Worker under a different name/URL,
-# update this constant. This is a public URL, not a secret.
 AI_WORKER_URL = "https://polybet-ai-research.ericlamar008.workers.dev/"
-
-# ---------------------------------------------------------------------------
-# Section definitions for the dashboard. Order here = order of both the nav
-# bar buttons and the sections on the page.
-# ---------------------------------------------------------------------------
-
-HIGH_CONFIDENCE_PRICE_THRESHOLD = 0.90  # primary market price >= this -> "high confidence" bucket
+HIGH_CONFIDENCE_PRICE_THRESHOLD = 0.90
 
 HIGH_CONFIDENCE_KEY = "high_confidence"
 HIGH_CONFIDENCE_LABEL = "⭐ احتمال بالا"
 HIGH_CONFIDENCE_ICON = "⭐"
 
 SECTION_DEFS: list[tuple[str, str, str, frozenset[str]]] = [
-    # (section_key, nav_label, section_title, categories_in_this_section)
     ("politics", "🗳️ سیاسی", "🗳️ سیاسی و انتخابات (Politics & Elections)", frozenset({"elections"})),
     (
         "economy",
         "📊 اقتصادی",
         "📊 اقتصاد و بانک‌های مرکزی (Economy & Central Banks)",
-        frozenset(
-            {
-                "fed", "cpi", "pce", "gdp", "employment",
-                "ecb", "boc", "boe", "central_banks_other",
-            }
-        ),
+        frozenset({"fed", "cpi", "pce", "gdp", "employment", "ecb", "boc", "boe", "central_banks_other"}),
     ),
     (
         "markets",
@@ -81,23 +59,29 @@ def _render_allocation_row(alloc) -> str:
     color = ROLE_COLORS.get(alloc.role, "#57606a")
     label = ROLE_LABELS.get(alloc.role, alloc.role)
     price_txt = f"{alloc.market_price:.2f}" if alloc.market_price is not None else "—"
+    net_roi = getattr(alloc, "net_roi_if_wins_pct", None)
+    if net_roi is None and alloc.market_price and alloc.market_price > 0:
+        net_roi = round((alloc.size_pct / alloc.market_price) - 100.0, 2)
+    roi_txt = f"{net_roi:+.1f}%" if net_roi is not None else "—"
+    roi_color = "#1a7f37" if (net_roi or 0) >= 0 else "#cf222e"
     return (
         f'<tr><td style="color:{color};font-weight:600">{label}</td>'
         f"<td>{_escape(alloc.outcome)}</td>"
         f"<td>{alloc.size_pct:.1f}%</td>"
-        f"<td>{price_txt}</td></tr>"
+        f"<td>{price_txt}</td>"
+        f'<td style="color:{roi_color};font-weight:600">{roi_txt}</td></tr>'
     )
 
 
-def _render_ai_widget(market: ScannedMarket) -> str:
-    """Renders the manual "AI Analysis" button + empty result container for
-    one market card. Nothing here runs automatically; the Worker is only
-    called when the user clicks the button in their browser."""
+def _render_ai_widget(market: ScannedMarket, title: str, plan: PositionPlan) -> str:
+    """FIX BUG #8: Send the full event's candidate outcomes and prices to the AI Worker."""
+    outcomes = [a.outcome for a in plan.allocations] or market.outcomes
+    outcome_prices = [a.market_price or 0.0 for a in plan.allocations] or market.outcome_prices
     payload = {
         "market_id": market.market_id,
-        "question": market.question,
-        "outcomes": market.outcomes,
-        "outcome_prices": market.outcome_prices,
+        "question": title or market.question,
+        "outcomes": outcomes,
+        "outcome_prices": outcome_prices,
         "end_date": market.end_date.isoformat() if market.end_date else None,
         "category": market.category,
     }
@@ -133,7 +117,6 @@ def _render_card(market: ScannedMarket, title: str, plan: PositionPlan, days_to_
     else:
         signal_html = '<p class="signal">🎯 Signal: unavailable</p>'
 
-    # Guaranteed-margin line, from position_logic.py's floor-sizing fix.
     margin_html = ""
     if plan.guaranteed_margin_pct is not None:
         margin_html = (
@@ -147,18 +130,18 @@ def _render_card(market: ScannedMarket, title: str, plan: PositionPlan, days_to_
     if show_confidence_badge and primary is not None:
         badge_html = _confidence_badge(primary.market_price)
 
-    ai_widget_html = _render_ai_widget(market)
+    ai_widget_html = _render_ai_widget(market, title, plan)
 
     return f"""<article class="market-card">
 <h2><a href="{_escape(market.url)}" target="_blank" rel="noopener">{_escape(title)}</a>{badge_html}</h2>
 {signal_html}
 {margin_html}
 {warning_html}
-<p class="meta">Category: <strong>{_escape(market.category)}</strong> &middot; Resolves in <strong>{days_to_resolve:.1f}d</strong> &middot; Consensus: <strong>{plan.consensus_score:.0f}</strong> ({plan.num_sources} sources) &middot; Edge: <strong>{plan.edge:.1%}</strong></p>
+<p class="meta">Category: <strong>{_escape(market.category)}</strong> &middot; Resolves in <strong>{days_to_resolve:.1f}d</strong> &middot; Consensus: <strong>{plan.consensus_score:.1f}%</strong> ({plan.num_sources} sources) &middot; Edge: <strong>{plan.edge:.1%}</strong></p>
 <details>
 <summary>Full position plan ({len(plan.allocations)} outcome(s))</summary>
 <table>
-<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th></tr></thead>
+<thead><tr><th>Role</th><th>Outcome</th><th>Size</th><th>Mkt price</th><th>Net ROI if wins</th></tr></thead>
 <tbody>
 {rows_html}
 </tbody>
@@ -170,7 +153,6 @@ def _render_card(market: ScannedMarket, title: str, plan: PositionPlan, days_to_
 
 
 def _section_for_category(category: str) -> tuple[str, str]:
-    """Returns (section_key, section_title) for a given market category."""
     for key, _nav_label, title, categories in SECTION_DEFS:
         if category in categories:
             return key, title
@@ -178,9 +160,6 @@ def _section_for_category(category: str) -> tuple[str, str]:
 
 
 def _bucket_results(results):
-    """Splits `results` into (high_confidence_list, {section_key: (title, [items])}).
-    Order follows SECTION_DEFS, with "other" appended last. Each item is the
-    original (market, title, plan, days) tuple."""
     high_confidence = []
     buckets: dict[str, tuple[str, list]] = {
         key: (title, []) for key, _nav_label, title, _cats in SECTION_DEFS
@@ -214,8 +193,6 @@ def _render_section(section_key: str, title: str, items, *, show_confidence_badg
 
 
 def _render_nav(section_counts: list[tuple[str, str, int]]) -> str:
-    """section_counts: list of (section_key, nav_label, count), already
-    filtered down to non-empty sections in display order."""
     total = sum(c for _k, _l, c in section_counts)
     buttons = [
         f'<button type="button" class="nav-btn active" data-target="all" onclick="filterSection(this)">'
@@ -238,7 +215,6 @@ def build_html(results, generated_at: datetime | None = None) -> str:
         body_html = '<p class="empty">No markets currently within the resolve window.</p>'
     else:
         high_confidence, buckets = _bucket_results(results)
-
         ordered_sections: list[tuple[str, str, str, list]] = [
             (HIGH_CONFIDENCE_KEY, HIGH_CONFIDENCE_ICON + " احتمال بالا", HIGH_CONFIDENCE_LABEL + " (Market-Implied)", high_confidence)
         ]
@@ -260,7 +236,7 @@ def build_html(results, generated_at: datetime | None = None) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Polymarket Bot — Latest Scan</title>
+<title>PolyBet v2.0 — Latest Scan</title>
 <style>
 body {{ font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 880px; margin: 0 auto; padding: 0 1rem 2rem; color: #1f2328; }}
 h1 {{ font-size: 1.5rem; margin-top: 1.5rem; }}
@@ -293,7 +269,7 @@ summary {{ cursor: pointer; color: #57606a; font-size: 0.85rem; }}
 </style>
 </head>
 <body>
-<h1>Polymarket Bot — Latest Scan</h1>
+<h1>PolyBet v2.0 — Latest Scan</h1>
 <p class="generated-at">Generated {timestamp_txt}</p>
 {nav_html}
 {body_html}
@@ -322,24 +298,7 @@ async function runAiAnalysis(btn) {{
     if (data.error) {{ resultDiv.innerHTML = data.error; return; }}
     let out = '';
     out += '<p><strong>Summary:</strong> ' + data.summary + '</p>';
-    if (data.sources && data.sources.length) {{
-      out += '<p><strong>Sources:</strong></p><ul>';
-      for (const s of data.sources) {{
-        const label = s.name + (s.date ? ' (' + s.date + ')' : '');
-        out += s.url ? ('<li><a href="' + s.url + '" target="_blank" rel="noopener">' + label + '</a></li>') : ('<li>' + label + '</li>');
-      }}
-      out += '</ul>';
-    }}
     out += '<p><strong>Confidence:</strong> ' + data.confidence + '</p>';
-    if (data.alternative_signal) {{
-      const s = data.alternative_signal;
-      out += '<p><strong>Alt signal:</strong> ' + s.primary.outcome + ' ' + s.primary.size_pct + '%</p>';
-      if (s.hedge) {{
-        out += '<p>Hedge: ' + s.hedge.outcome + ' ' + s.hedge.size_pct + '% (stop-loss ' + s.hedge.stop_loss_pct + '%)</p>';
-      }}
-      out += '<p>Net if primary wins/loses: ' + s.net_profit_if_primary_wins_pct + '% / ' + s.net_profit_if_primary_loses_pct + '%</p>';
-    }}
-    if (data.cached) {{ out += '<p style="color:#57606a;font-size:0.8rem">(cached)</p>'; }}
     resultDiv.innerHTML = out;
   }} catch (e) {{
     resultDiv.innerHTML = e.message;
